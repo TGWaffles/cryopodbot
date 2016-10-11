@@ -1,10 +1,15 @@
 #!/usr/bin/python
+import sys
+import logging
+import discord
+from discord.ext import commands
 import praw
 import pdb
 import re
 import time
 #Imports all passwords from a hidden file ;)
 from pw_bot import *
+logging.basicConfig(level=logging.INFO)
 user_agent = ("CryoBot 1.0")
 #Starts the main section of the reddit bot and assigns it to r.
 r = praw.Reddit(user_agent = user_agent)
@@ -21,7 +26,7 @@ r.login(REDDIT_USERNAME, REDDIT_PASS)
 #		time.sleep(5)
 		#if str(submission.title)[0:4].lower() == "part":
 #Fetches all messages sent to the bot.
-messages = r.get_inbox()
+messages = r.get_messages()
 already_done = []
 alreadyin = []
 #For every message in the messages you just fetched:
@@ -46,14 +51,14 @@ for message in messages:
 		#Double check to attempt to double-post proof.
 		if str(message.author) not in alreadyin:
 			#Write the sender's name in the username list.
-			file.write("\n" + str(message.author))
+			file.write(str(message.author) + "\n")
 			#Tells the sender they've been added.
 			message.reply("BOT: Thanks, you've been added to the list!")
 			time.sleep(2)
 			#Adds their name to the ID list and stuff.
 			alreadyin.append(message.author)
 			already_done.append(message.id)
-			otherfile.write("\n" + str(message.id))
+			otherfile.write(str(message.id) + "\n")
 	#Same as above but for unsubbing... Very system-intensive compared.
 	elif "unsubscribe" in str(message.body).lower() and str(message.author) in alreadyin and str(message.id) not in already_done:
 		f = open("list.txt","r+")
@@ -81,16 +86,16 @@ for submission in subreddit.get_new(limit=1):
 		linelen = len(line)
 		newlinelen = linelen - 1
 		if line[:newlinelen] not in fixit:
-			fixit.append(line)
+			fixit.append(line[:newlinelen])
 	#If the author is Klok and it begins with part, do this:
 	if str(author).lower() == "klokinator" and title[0:4].lower() == "part" and id not in fixit:
-		file.write("\n" + id)
+		file.write(id + "\n")
 		time.sleep(5)
 		file.close()
 		file = open('list.txt', 'r+')
 		alreadyin = []
 		#Post the comment on the thread.
-		postedcomment = submission.add_comment("Hi. I'm a bot, bleep bloop." + "\n" + "\n" + "If you're about to post regarding a typo and this Part was just posted, please wait ten minutes, refresh, and then see if it's still there!" + "\n" + "\n" + "Also, if you want to report typos anywhere, please respond to this bot to keep the main post clutter free. Thank you!" + "\n" + "\n" + "\n" + "[Click Here to be PM'd new updates!](https://np.reddit.com/message/compose/?to=CryopodBot&subject=Subscribe&message=Subscribe) " + "[Click Here to unsubscribe!](https://np.reddit.com/message/compose/?to=CryopodBot&subject=unsubscribe&message=unsubscribe)" + "\n" + "\n" + "\n" + "If you want to donate to Klokinator, send paypal gifts to Klokinator@yahoo.com, but be sure to mark it as a gift or Paypal takes 10%. " + "\n" + "\n" + "Patreon can also be pledged to [here!](https://www.patreon.com/klokinator)")
+		postedcomment = submission.add_comment("IMPORTANT NOTICE: If you've been subbed before, you're unsubbed now, unless you got PM'd about this part. The sub list corrupted and I was able to readd about 10ish people... If you're not one of those, resub!" + "\n" + "\n" + "\n" +"Hi. I'm a bot, bleep bloop." + "\n" + "\n" + "If you're about to post regarding a typo and this Part was just posted, please wait ten minutes, refresh, and then see if it's still there!" + "\n" + "\n" + "Also, if you want to report typos anywhere, please respond to this bot to keep the main post clutter free. Thank you!" + "\n" + "\n" + "\n" + "[Click Here to be PM'd new updates!](https://np.reddit.com/message/compose/?to=CryopodBot&subject=Subscribe&message=Subscribe) " + "[Click Here to unsubscribe!](https://np.reddit.com/message/compose/?to=CryopodBot&subject=unsubscribe&message=unsubscribe)" + "\n" + "\n" + "\n" + "If you want to donate to Klokinator, send paypal gifts to Klokinator@yahoo.com, but be sure to mark it as a gift or Paypal takes 10%. " + "\n" + "\n" + "Patreon can also be pledged to [here!](https://www.patreon.com/klokinator)")
 		#Sticky the comment that was just posted.
 		postedcomment.distinguish(sticky=True)
 		#Get the index list's ID.
@@ -103,6 +108,8 @@ for submission in subreddit.get_new(limit=1):
 		toedit.edit(putin)
 		time.sleep(2)
 		#Put all users in the username file into a list, then:
+		file.close()
+		file = open('list.txt','r+')
 		for line in file:
 			linelen = len(line)
 			newlinelen = linelen -1
@@ -111,14 +118,7 @@ for submission in subreddit.get_new(limit=1):
 		#For every name in the list, send them this message with the link to the part.
 		for name in alreadyin:
 			r.send_message(name, "New Post!", "[New Post on /r/TheCryopodToHell!](" + submission.permalink + ")")
-			time.sleep(5)
+			time.sleep(2)
 		file.close()
 	else:
 		file.close()
-#Check & organise the username file for duplicates.
-lines = open('list.txt', 'r').readlines()
-lines_set = set(lines)
-out  = open('list.txt', 'w')
-for line in lines_set:
-	out.write(line)
-out.close()
