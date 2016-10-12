@@ -47,7 +47,19 @@ for message in messages:
 			if line[:newlinelen] not in already_done:
 				already_done.append(line[:newlinelen])
 	#If the message talks about subscription, and if the author hasn't already been added and the id isn't done:
-	if "subscribe" in str(message.body).lower() and str(message.author) not in alreadyin and str(message.id) not in already_done:
+	if "unsubscribe" in str(message.body).lower() and str(message.author) in alreadyin and str(message.id) not in already_done:
+		message.reply("BOT: You've been unsubscribed!")
+		f = open("list.txt","r+")
+		d = f.readlines()
+		f.seek(0)
+		for i in d:
+			if str(message.author) not in i:
+		                f.write(i)
+		f.truncate()
+		f.close()
+		already_done.append(message.id)
+		otherfile.write(str(message.id) + "\n")
+	elif "subscribe" in str(message.body).lower() and str(message.author) not in alreadyin and str(message.id) not in already_done:
 		#Double check to attempt to double-post proof.
 		if str(message.author) not in alreadyin:
 			#Write the sender's name in the username list.
@@ -59,16 +71,6 @@ for message in messages:
 			alreadyin.append(message.author)
 			already_done.append(message.id)
 			otherfile.write(str(message.id) + "\n")
-	#Same as above but for unsubbing... Very system-intensive compared.
-	elif "unsubscribe" in str(message.body).lower() and str(message.author) in alreadyin and str(message.id) not in already_done:
-		f = open("list.txt","r+")
-		d = f.readlines()
-		f.seek(0)
-		for i in d:
-			if i != str(str(message.author) + "\n"):
-				f.write(i)
-		f.truncate()
-		f.close()
 	otherfile.close()
 	file.close()
 #Empty list to prevent double posts.
@@ -95,7 +97,8 @@ for submission in subreddit.get_new(limit=1):
 		file = open('list.txt', 'r+')
 		alreadyin = []
 		#Post the comment on the thread.
-		postedcomment = submission.add_comment("IMPORTANT NOTICE: If you've been subbed before, you're unsubbed now, unless you got PM'd about this part. The sub list corrupted and I was able to readd about 10ish people... If you're not one of those, resub!" + "\n" + "\n" + "\n" +"Hi. I'm a bot, bleep bloop." + "\n" + "\n" + "If you're about to post regarding a typo and this Part was just posted, please wait ten minutes, refresh, and then see if it's still there!" + "\n" + "\n" + "Also, if you want to report typos anywhere, please respond to this bot to keep the main post clutter free. Thank you!" + "\n" + "\n" + "\n" + "[Click Here to be PM'd new updates!](https://np.reddit.com/message/compose/?to=CryopodBot&subject=Subscribe&message=Subscribe) " + "[Click Here to unsubscribe!](https://np.reddit.com/message/compose/?to=CryopodBot&subject=unsubscribe&message=unsubscribe)" + "\n" + "\n" + "\n" + "If you want to donate to Klokinator, send paypal gifts to Klokinator@yahoo.com, but be sure to mark it as a gift or Paypal takes 10%. " + "\n" + "\n" + "Patreon can also be pledged to [here!](https://www.patreon.com/klokinator)")
+		postedcomment = submission.add_comment("Hi. I'm a bot, bleep bloop." + "\n" + "\n" + "If you're about to post regarding a typo and this Part was just posted, please wait ten minutes, refresh, and then see if it's still there!" + "\n" + "\n" + "Also, if you want to report typos anywhere, please respond to this bot to keep the main post clutter free. Thank you!" + "\n" + "\n" + "\n" + "[Click Here to be PM'd new updates!](https://np.reddit.com/message/compose/?to=CryopodBot&subject=Subscribe&message=Subscribe) " + "[Click Here to unsubscribe!](https://np.reddit.com/message/compose/?to=CryopodBot&subject=unsubscribe&message=unsubscribe)" + "\n" + "\n" + "\n" + "If you want to donate to Klokinator, send paypal gifts to Klokinator@yahoo.com, but be sure to mark it as a gift or Paypal takes 10%. " + "\n" + "\n" + "Patreon can also be pledged to [here!](https://www.patreon.com/klokinator)")
+		submission.set_flair("STORY", "story")
 		#Sticky the comment that was just posted.
 		postedcomment.distinguish(sticky=True)
 		#Get the index list's ID.
@@ -122,3 +125,24 @@ for submission in subreddit.get_new(limit=1):
 		file.close()
 	else:
 		file.close()
+subreddit_comments = subreddit.get_comments()
+subcomments = praw.helpers.flatten_tree(subreddit_comments)
+for comment in subcomments:
+	otherfile = open('done.txt','r+')
+	for i in range(2):
+		for line in otherfile:
+			linelen = len(line)
+			newlinelen = linelen - 1
+			if line[:newlinelen] not in already_done:
+				already_done.append(line[:newlinelen])
+	if "/u/cryopodbot" in str(comment.body).lower() and str(comment.id) not in already_done:
+		if "post" in str(comment.body).lower():
+			if str(comment.author).lower() != "cryopodbot":
+				comment.reply("Hi. I'm a bot, bleep bloop." + "\n" + "\n" + "If you're about to post regarding a typo and this Part was just posted, please wait ten minutes, refresh, and then see if it's still there!" + "\n" + "\n" + "Also, if you want to report typos anywhere, please respond to this bot to keep the main post clutter free. Thank you!" + "\n" + "\n" + "\n" + "[Click Here to be PM'd new updates!](https://np.reddit.com/message/compose/?to=CryopodBot&subject=Subscribe&message=Subscribe) " + "[Click Here to unsubscribe!](https://np.reddit.com/message/compose/?to=CryopodBot&subject=unsubscribe&message=unsubscribe)" + "\n" + "\n" + "\n" + "If you want to donate to Klokinator, send paypal gifts to Klokinator@yahoo.com, but be sure to mark it as a gift or Paypal takes 10%. " + "\n" + "\n" + "Patreon can also be pledged to [here!](https://www.patreon.com/klokinator)")
+				otherfile.write(str(comment.id) + "\n")
+		if "flair info" in str(comment.body).lower():
+			if str(comment.author).lower() == "thomas1672" or str(comment.author).lower() == "klokinator":
+				flairsubmtoset = r.get_submission(submission_id=str(comment.parent_id)[-6:])
+				flairsubmtoset.set_flair("INFO", "info")
+				otherfile.write(str(comment.id) + "\n")
+otherfile.close()
