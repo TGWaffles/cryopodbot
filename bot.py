@@ -156,5 +156,10 @@ for comment in subcomments:
 				#Flair and stop duplicate flairing (would only waste processor time)
 				flairsubmtoset.set_flair("INFO", "info")
 				otherfile.write(str(comment.id) + "\n")
+		if "flair question" in str(comment.body).lower():
+			if str(comment.author).lower() == "thomas1672" or str(comment.author).lower() == "klokinator":
+				flairsubmtoset = r.get_submission(submission_id=str(comment.parent_id)[-6:])
+				flairsubmtoset.set_flair("QUESTION", "question")
+				otherfile.write(str(comment.id) + "\n")
 #Re-Save the file.
 otherfile.close()
