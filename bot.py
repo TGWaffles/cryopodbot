@@ -125,24 +125,36 @@ for submission in subreddit.get_new(limit=1):
 		file.close()
 	else:
 		file.close()
+#Gets all comments in the subreddit, then flattens them.
 subreddit_comments = subreddit.get_comments()
 subcomments = praw.helpers.flatten_tree(subreddit_comments)
+#Loops through every comment in the sub.
 for comment in subcomments:
+	#Opens file with comment ids.
 	otherfile = open('done.txt','r+')
+	#Do it twice to make sure.
 	for i in range(2):
 		for line in otherfile:
 			linelen = len(line)
 			newlinelen = linelen - 1
 			if line[:newlinelen] not in already_done:
 				already_done.append(line[:newlinelen])
+	#If someone's tagging us and we've not processed their comment:
 	if "/u/cryopodbot" in str(comment.body).lower() and str(comment.id) not in already_done:
+		#If it's talking about the post, comment the post.
 		if "post" in str(comment.body).lower():
+			#Make sure the bot doesn't respond to itself.
 			if str(comment.author).lower() != "cryopodbot":
+				#Reply!
 				comment.reply("Hi. I'm a bot, bleep bloop." + "\n" + "\n" + "If you're about to post regarding a typo and this Part was just posted, please wait ten minutes, refresh, and then see if it's still there!" + "\n" + "\n" + "Also, if you want to report typos anywhere, please respond to this bot to keep the main post clutter free. Thank you!" + "\n" + "\n" + "\n" + "[Click Here to be PM'd new updates!](https://np.reddit.com/message/compose/?to=CryopodBot&subject=Subscribe&message=Subscribe) " + "[Click Here to unsubscribe!](https://np.reddit.com/message/compose/?to=CryopodBot&subject=unsubscribe&message=unsubscribe)" + "\n" + "\n" + "\n" + "If you want to donate to Klokinator, send paypal gifts to Klokinator@yahoo.com, but be sure to mark it as a gift or Paypal takes 10%. " + "\n" + "\n" + "Patreon can also be pledged to [here!](https://www.patreon.com/klokinator)")
+				#Post the ID to a file to prevent duplicates.
 				otherfile.write(str(comment.id) + "\n")
+		#If the post wants a flair and it's me or Klok:
 		if "flair info" in str(comment.body).lower():
 			if str(comment.author).lower() == "thomas1672" or str(comment.author).lower() == "klokinator":
 				flairsubmtoset = r.get_submission(submission_id=str(comment.parent_id)[-6:])
+				#Flair and stop duplicate flairing (would only waste processor time)
 				flairsubmtoset.set_flair("INFO", "info")
 				otherfile.write(str(comment.id) + "\n")
+#Re-Save the file.
 otherfile.close()
