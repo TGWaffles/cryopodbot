@@ -120,7 +120,7 @@ for submission in subreddit.get_new(limit=1):
 				alreadyin.append(line[:newlinelen])
 		#For every name in the list, send them this message with the link to the part.
 		for name in alreadyin:
-			r.send_message(name, "New Post!", "[New Post on /r/TheCryopodToHell!](" + submission.permalink + ")")
+			r.send_message(name, "New Post!", "New Post on /r/TheCryopodToHell! - [" + title + "](" + submission.permalink + ")")
 			time.sleep(2)
 		file.close()
 	else:
