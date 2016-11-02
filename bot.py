@@ -90,12 +90,14 @@ for submission in subreddit.get_new(limit=1):
 		if line[:newlinelen] not in fixit:
 			fixit.append(line[:newlinelen])
 	#If the author is Klok and it begins with part, do this:
-	if str(author).lower() == "klokinator" and title[0:4].lower() == "part" and id not in fixit:
+	if str(author).lower() == "klokinator" and title[0:4].lower() == "part" and id not in fixit or str(author).lower() == "thomas1672" and title[0:4].lower() == "test" and id not in fixit:
 		file.write(id + "\n")
 		time.sleep(5)
 		file.close()
 		file = open('list.txt', 'r+')
 		alreadyin = []
+		finished = []
+		todo = []
 		#Post the comment on the thread.
 		postedcomment = submission.add_comment("Hi. I'm a bot, bleep bloop." + "\n" + "\n" + "If you're about to post regarding a typo and this Part was just posted, please wait ten minutes, refresh, and then see if it's still there!" + "\n" + "\n" + "If you want to chat with 200+ fellow Cryopod readers, join the Discord at https://discord.gg/6JtsQJR" + "\n" + "\n" + "\n" + "[Click Here to be PM'd new updates!](https://np.reddit.com/message/compose/?to=CryopodBot&subject=Subscribe&message=Subscribe) " + "[Click Here to unsubscribe!](https://np.reddit.com/message/compose/?to=CryopodBot&subject=unsubscribe&message=unsubscribe)" + "\n" + "\n" + "\n" + "If you want to donate to Klokinator, send paypal gifts to Klokinator@yahoo.com, but be sure to mark it as a gift or Paypal takes 10%. " + "\n" + "\n" + "Patreon can also be pledged to [here!](https://www.patreon.com/klokinator)")
 		submission.set_flair("STORY", "story")
@@ -121,7 +123,17 @@ for submission in subreddit.get_new(limit=1):
 		#For every name in the list, send them this message with the link to the part.
 		for name in alreadyin:
 			r.send_message(name, "New Post!", "New Post on /r/TheCryopodToHell! - [" + title + "](" + submission.permalink + ")")
-			time.sleep(2)
+			finished.append(str(name))
+			time.sleep(3)
+		time.sleep(10)
+		for line in file:
+			linelen = len(line)
+			newlinelen = linelen -1
+			if line[:newlinelen] not in finished:
+				todo.append(line[:newlinelen])
+		for name in todo:
+			r.send_message(name, "New Post!", "New Post on /r/TheCryopodToHell! - [" + title + "](" + submission.permalink + ")")
+			time.sleep(3)
 		file.close()
 	else:
 		file.close()
