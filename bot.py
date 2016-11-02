@@ -92,8 +92,8 @@ for submission in subreddit.get_new(limit=1):
 	#If the author is Klok and it begins with part, do this:
 	if str(author).lower() == "klokinator" and title[0:4].lower() == "part" and id not in fixit or str(author).lower() == "thomas1672" and title[0:4].lower() == "test" and id not in fixit:
 		file.write(id + "\n")
-		time.sleep(5)
 		file.close()
+		time.sleep(3)
 		file = open('list.txt', 'r+')
 		alreadyin = []
 		finished = []
@@ -122,9 +122,16 @@ for submission in subreddit.get_new(limit=1):
 				alreadyin.append(line[:newlinelen])
 		#For every name in the list, send them this message with the link to the part.
 		for name in alreadyin:
-			r.send_message(name, "New Post!", "New Post on /r/TheCryopodToHell! - [" + title + "](" + submission.permalink + ")")
-			finished.append(str(name))
-			time.sleep(3)
+			try:
+				r.send_message(name, "New Post!", "New Post on /r/TheCryopodToHell! - [" + title + "](" + submission.permalink + ")")
+				finished.append(str(name))
+			except Exception as ex:
+				print(ex)
+				print(name)
+				f = open('offenders.txt','r+')
+				f.write(name + "\n")
+				f.close()
+			time.sleep(1)
 		time.sleep(10)
 		for line in file:
 			linelen = len(line)
@@ -132,8 +139,15 @@ for submission in subreddit.get_new(limit=1):
 			if line[:newlinelen] not in finished:
 				todo.append(line[:newlinelen])
 		for name in todo:
-			r.send_message(name, "New Post!", "New Post on /r/TheCryopodToHell! - [" + title + "](" + submission.permalink + ")")
-			time.sleep(3)
+			try:
+				r.send_message(name, "New Post!", "New Post on /r/TheCryopodToHell! - [" + title + "](" + submission.permalink + ")")
+			except Exception as ex:
+				print(ex)
+				print(name)
+				f = open('offenders.txt','r+')
+				f.write(name + "\n")
+				f.close()
+			time.sleep(1)
 		file.close()
 	else:
 		file.close()
