@@ -113,8 +113,6 @@ for submission in subreddit.get_new(limit=1):
 		toedit.edit(putin)
 		time.sleep(2)
 		#Put all users in the username file into a list, then:
-		file.close()
-		file = open('list.txt','r+')
 		for line in file:
 			linelen = len(line)
 			newlinelen = linelen -1
@@ -176,16 +174,19 @@ for comment in subcomments:
 				#Post the ID to a file to prevent duplicates.
 				otherfile.write(str(comment.id) + "\n")
 		#If the post wants a flair and it's me or Klok:
-		if "flair info" in str(comment.body).lower():
+		elif "flair info" in str(comment.body).lower():
 			if str(comment.author).lower() == "thomas1672" or str(comment.author).lower() == "klokinator":
 				flairsubmtoset = r.get_submission(submission_id=str(comment.parent_id)[-6:])
 				#Flair and stop duplicate flairing (would only waste processor time)
 				flairsubmtoset.set_flair("INFO", "info")
 				otherfile.write(str(comment.id) + "\n")
-		if "flair question" in str(comment.body).lower():
+		elif "flair question" in str(comment.body).lower():
 			if str(comment.author).lower() == "thomas1672" or str(comment.author).lower() == "klokinator":
 				flairsubmtoset = r.get_submission(submission_id=str(comment.parent_id)[-6:])
 				flairsubmtoset.set_flair("QUESTION", "question")
 				otherfile.write(str(comment.id) + "\n")
+		elif str(comment.author).lower() == "thomas1672" or str(comment.author).lower() == "klokinator":
+			comment.reply("You called? ;)")
+			otherfile.write(str(comment.id) + "\n")
 #Re-Save the file.
 otherfile.close()
