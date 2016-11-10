@@ -2,7 +2,7 @@
 import sys
 import logging
 import discord
-from discord.ext import commands
+import asyncio
 import praw
 import pdb
 import re
@@ -93,6 +93,8 @@ for submission in subreddit.get_new(limit=1):
 	if str(author).lower() == "klokinator" and title[0:4].lower() == "part" and id not in fixit or str(author).lower() == "thomas1672" and title[0:4].lower() == "test" and id not in fixit:
 		file.write(id + "\n")
 		file.close()
+		file = open('newpart.txt', 'w')
+		file.write("1" + "\n" + "@everyone - " + title + " - " + submission.permalink)
 		time.sleep(3)
 		file = open('list.txt', 'r+')
 		alreadyin = []
