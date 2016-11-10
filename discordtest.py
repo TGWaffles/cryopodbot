@@ -24,7 +24,7 @@ async def on_message(message):
 		tmp = await client.send_message(message.channel, 'Trying to remove you, @' + str(message.author))
 		await client.remove_roles(message.author, role)
 		await client.edit_message(tmp, 'Removed!')
-async def my_background_task():
+async def new_part_checker():
 	await client.wait_until_ready()
 	while True:
 		file = open('newpart.txt', 'r')
@@ -37,5 +37,5 @@ async def my_background_task():
 			file.write('0')
 			file.close()
 		await asyncio.sleep(30)
-client.loop.create_task(my_background_task())
+client.loop.create_task(new_part_checker())
 client.run(DISCORD_TOKEN)
