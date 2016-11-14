@@ -36,6 +36,8 @@ async def new_part_checker():
 			file = open('newpart.txt', 'w')
 			file.write('0')
 			file.close()
+		else:
+			file.close()
 		await asyncio.sleep(30)
 #async def reminder():
 #	await client.wait_until_ready()
