@@ -37,5 +37,12 @@ async def new_part_checker():
 			file.write('0')
 			file.close()
 		await asyncio.sleep(30)
+#async def reminder():
+#	await client.wait_until_ready()
+#	while True:
+#		tmp = await client.send_message(client.get_channel('246162218104782848'), 'AUTOMATED MESSAGE: If you\'re not already subscribed on the discord, be sure to subscribe by doing !optin and if you feel the need to unsubscribe, just do !optout - in any chat! Also, here\'s some handy links:' + '\n' + 'Klok\'s Patreon: <https://www.patreon.com/klokinator>' + "\n" + 'My Github: <https://github.com/TGWaffles/cryopodbot>' + "\n" + 'Subreddit: <http://reddit.com/r/thecryopodtohell>')
+#		await asyncio.sleep(21600)
+#		await client.delete_message(tmp)
 client.loop.create_task(new_part_checker())
+#client.loop.create_task(reminder())
 client.run(DISCORD_TOKEN)
