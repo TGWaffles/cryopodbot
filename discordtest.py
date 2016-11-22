@@ -50,7 +50,7 @@ async def new_part_checker():
 			if str(author).lower() == "klokinator" and title[0:4].lower() == "part" and id not in fixit or str(author).lower() == "thomas1672" and title[0:4].lower() == "test" and id not in fixit:
 				file.write(id + "\n")
 				file.close()
-				topost = "@everyone - " + title + " - " + submission.permalink
+				topost = "@everyone - " + title + " - <" + submission.permalink + ">"
 				tmp = await client.send_message(client.get_channel('226088087996989450'), topost)
 			else:
 				file.close()
