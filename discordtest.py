@@ -25,6 +25,9 @@ async def on_message(message):
 		tmp = await client.send_message(message.channel, 'Trying to remove you, @' + str(message.author))
 		await client.remove_roles(message.author, role)
 		await client.edit_message(tmp, 'Removed!')
+		await asyncio.sleep(30)
+		await client.delete_message(tmp)
+		await client.delete_message(message)
 async def new_part_checker():
 	await client.wait_until_ready()
 	user_agent = ("CryoChecker 1.0")
