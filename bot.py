@@ -6,6 +6,7 @@ import asyncio
 import praw
 import pdb
 import re
+import random
 import time
 #Imports all passwords from a hidden file ;)
 from pw_bot import *
@@ -187,8 +188,28 @@ for comment in subcomments:
 				flairsubmtoset = r.get_submission(submission_id=str(comment.parent_id)[-6:])
 				flairsubmtoset.set_flair("QUESTION", "question")
 				otherfile.write(str(comment.id) + "\n")
-		elif str(comment.author).lower() == "thomas1672" or str(comment.author).lower() == "klokinator":
-			comment.reply("You called? ;)")
+		elif str(comment.author).lower() != "cryopodbot":
+			select = int(random.randint(0,10))
+			if select == 1:
+				comment.reply("You called? ;)")
+			elif select == 2:
+				comment.reply("What's up?")
+			elif select == 3:
+				comment.reply("Hey!")
+			elif select == 4: 
+				comment.reply("Go check out my discord at https://github.com/TGWaffles/cryopodbot")
+			elif select == 5:
+				comment.reply("Tagging me in a post can trigger specific things. One of the random replies means I didn't understand what you asked!")
+			elif select == 6:
+				comment.reply("Yo, 'sup?")
+			elif select == 7:
+				comment.reply("Go check out Klok's patreon [here!](https://www.patreon.com/klokinator)")
+			elif select == 8:
+				comment.reply("I was coded by /u/thomas1672 - direct all questions to him!")
+			elif select == 9:
+				comment.reply("Now taking suggestions for more of these random supplies in the discord!")
+			else:
+				comment.reply("Join the discord @ https://discord.gg/EkdeJER")
 			otherfile.write(str(comment.id) + "\n")
 #Re-Save the file.
 otherfile.close()

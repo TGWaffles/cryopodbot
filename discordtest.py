@@ -2,6 +2,7 @@ import discord
 import asyncio
 import random
 import time
+import praw
 from pw_bot import *
 client = discord.Client()
 
@@ -26,19 +27,31 @@ async def on_message(message):
 		await client.edit_message(tmp, 'Removed!')
 async def new_part_checker():
 	await client.wait_until_ready()
+	user_agent = ("CryoChecker 1.0")
+	r = praw.Reddit(user_agent = user_agent)
+	r.login(REDDIT_USERNAME, REDDIT_PASS)
+	subreddit = r.get_subreddit("thecryopodtohell")
 	while True:
+		fixit = []
 		file = open('newpart.txt', 'r')
-		firstline = file.readline()
-		if str(firstline)[0] == '1':
-			topost = file.readline()
-			tmp = await client.send_message(client.get_channel('226088087996989450'), topost)
-			file.close()
-			file = open('newpart.txt', 'w')
-			file.write('0')
-			file.close()
-		else:
-			file.close()
-		await asyncio.sleep(30)
+		for submission in subreddit.get_new(limit=1):
+			author = submission.author
+			title = str(submission.title)
+			id = str(submission.id)
+			file = open('donediscord.txt','r+')
+			for line in file:
+				linelen = len(line)
+				newlinelen = linelen - 1
+				if line[:newlinelen] not in fixit:
+					fixit.append(line[:newlinelen])
+			if str(author).lower() == "klokinator" and title[0:4].lower() == "part" and id not in fixit or str(author).lower() == "thomas1672" and title[0:4].lower() == "test" and id not in fixit:
+				file.write(id + "\n")
+				file.close()
+				topost = "@everyone - " + title + " - " + submission.permalink
+				tmp = await client.send_message(client.get_channel('226088087996989450'), topost)
+			else:
+				file.close()
+		await asyncio.sleep(15)
 #async def reminder():
 #	await client.wait_until_ready()
 #	while True:
