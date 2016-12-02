@@ -94,15 +94,18 @@ for submission in subreddit.get_new(limit=1):
 	if str(author).lower() == "klokinator" and title[0:4].lower() == "part" and id not in fixit or str(author).lower() == "thomas1672" and title[0:4].lower() == "test" and id not in fixit:
 		file.write(id + "\n")
 		file.close()
-		file = open('newpart.txt', 'w')
-		file.write("1" + "\n" + "@everyone - " + title + " - " + submission.permalink)
-		time.sleep(3)
-		file = open('list.txt', 'r+')
+		file = open('lastpart.txt', 'r')
+		lastprt = file.readline()
+		file.close()
 		alreadyin = []
 		finished = []
 		todo = []
 		#Post the comment on the thread.
 		postedcomment = submission.add_comment("Hi. I'm a bot, bleep bloop." + "\n" + "\n" + "If you're about to post regarding a typo and this Part was just posted, please wait ten minutes, refresh, and then see if it's still there!" + "\n" + "\n" + "If you want to chat with 200+ fellow Cryopod readers, join the Discord at https://discord.gg/6JtsQJR" + "\n" + "\n" + "\n" + "[Click Here to be PM'd new updates!](https://np.reddit.com/message/compose/?to=CryopodBot&subject=Subscribe&message=Subscribe) " + "[Click Here to unsubscribe!](https://np.reddit.com/message/compose/?to=CryopodBot&subject=unsubscribe&message=unsubscribe)" + "\n" + "\n" + "\n" + "If you want to donate to Klokinator, send paypal gifts to Klokinator@yahoo.com, but be sure to mark it as a gift or Paypal takes 10%. " + "\n" + "\n" + "Patreon can also be pledged to [here!](https://www.patreon.com/klokinator)")
+		file = open('lastpart.txt', 'w')
+		file.write(str(postedcomment.permalink))
+		file.close()
+		file = open('list.txt', 'r+')
 		submission.set_flair("STORY", "story")
 		#Sticky the comment that was just posted.
 		postedcomment.distinguish(sticky=True)
@@ -115,41 +118,46 @@ for submission in subreddit.get_new(limit=1):
 		time.sleep(2)
 		toedit.edit(putin)
 		time.sleep(2)
-		#Put all users in the username file into a list, then:
-		for line in file:
-			linelen = len(line)
-			newlinelen = linelen -1
-			if line[:newlinelen] not in alreadyin:
-				alreadyin.append(line[:newlinelen])
-		#For every name in the list, send them this message with the link to the part.
-		for name in alreadyin:
-			try:
-				r.send_message(name, "New Post!", "New Post on /r/TheCryopodToHell! - [" + title + "](" + submission.permalink + ")")
-				finished.append(str(name))
-			except Exception as ex:
-				print(ex)
-				print(name)
-				f = open('offenders.txt','r+')
-				f.write(name + "\n")
-				f.close()
-			time.sleep(1)
-		time.sleep(10)
-		for line in file:
-			linelen = len(line)
-			newlinelen = linelen -1
-			if line[:newlinelen] not in finished:
-				todo.append(line[:newlinelen])
-		for name in todo:
-			try:
-				r.send_message(name, "New Post!", "New Post on /r/TheCryopodToHell! - [" + title + "](" + submission.permalink + ")")
-			except Exception as ex:
-				print(ex)
-				print(name)
-				f = open('offenders.txt','r+')
-				f.write(name + "\n")
-				f.close()
-			time.sleep(1)
-		file.close()
+		nxtparts = r.get_submission(lastprt)
+		nxtpart = nxtparts.comments[0]
+		add = nxtpart.body + "\n" + "\n" + "[" + submission.title + "](" + submission.permalink + ")"
+		nxtpart.edit(add)
+		if title[0:4].lower() != "test":
+			#Put all users in the username file into a list, then:
+			for line in file:
+				linelen = len(line)
+				newlinelen = linelen -1
+				if line[:newlinelen] not in alreadyin:
+					alreadyin.append(line[:newlinelen])
+			#For every name in the list, send them this message with the link to the part.
+			for name in alreadyin:
+				try:
+					r.send_message(name, "New Post!", "New Post on /r/TheCryopodToHell! - [" + title + "](" + submission.permalink + ")")
+					finished.append(str(name))
+				except Exception as ex:
+					print(ex)
+					print(name)
+					f = open('offenders.txt','r+')
+					f.write(name + "\n")
+					f.close()
+				time.sleep(1)
+			time.sleep(10)
+			for line in file:
+				linelen = len(line)
+				newlinelen = linelen -1
+				if line[:newlinelen] not in finished:
+					todo.append(line[:newlinelen])
+			for name in todo:
+				try:
+					r.send_message(name, "New Post!", "New Post on /r/TheCryopodToHell! - [" + title + "](" + submission.permalink + ")")
+				except Exception as ex:
+					print(ex)
+					print(name)
+					f = open('offenders.txt','r+')
+					f.write(name + "\n")
+					f.close()
+				time.sleep(1)
+			file.close()
 	else:
 		file.close()
 #Gets all comments in the subreddit, then flattens them.
