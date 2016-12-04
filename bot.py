@@ -100,8 +100,20 @@ for submission in subreddit.get_new(limit=1):
 		alreadyin = []
 		finished = []
 		todo = []
+		nxtparts = r.get_submission(lastprt)
+		nxtpart = nxtparts.comments[0]
+		add = nxtpart.body + "\n" + "\n" + "[" + submission.title + "](" + submission.permalink + ")"
+		nxtpart.edit(add)
+		prev = r.get_info(thing_id=nxtpart.parent_id)
+		prevurl = prev.permalink
+		uwc = []
+		wc = 0
+		for i in str(submission.selftext).split():
+			if i not in uwc:
+				wc += 1
+				uwc.append(i)
 		#Post the comment on the thread.
-		postedcomment = submission.add_comment("Hi. I'm a bot, bleep bloop." + "\n" + "\n" + "If you're about to post regarding a typo and this Part was just posted, please wait ten minutes, refresh, and then see if it's still there!" + "\n" + "\n" + "If you want to chat with 200+ fellow Cryopod readers, join the Discord at https://discord.gg/6JtsQJR" + "\n" + "\n" + "\n" + "[Click Here to be PM'd new updates!](https://np.reddit.com/message/compose/?to=CryopodBot&subject=Subscribe&message=Subscribe) " + "[Click Here to unsubscribe!](https://np.reddit.com/message/compose/?to=CryopodBot&subject=unsubscribe&message=unsubscribe)" + "\n" + "\n" + "\n" + "If you want to donate to Klokinator, send paypal gifts to Klokinator@yahoo.com, but be sure to mark it as a gift or Paypal takes 10%. " + "\n" + "\n" + "Patreon can also be pledged to [here!](https://www.patreon.com/klokinator)")
+		postedcomment = submission.add_comment("Hi. I'm a bot, bleep bloop." + "\n" + "\n" + "\n" + "\n" + "If you want to chat with 200+ fellow Cryopod readers, join the Discord at https://discord.gg/6JtsQJR" + "\n" + "\n" + "\n" + "[Click Here to be PM'd new updates!](https://np.reddit.com/message/compose/?to=CryopodBot&subject=Subscribe&message=Subscribe) " + "[Click Here to unsubscribe!](https://np.reddit.com/message/compose/?to=CryopodBot&subject=unsubscribe&message=unsubscribe)" + "\n" + "\n" + "\n" + "If you want to donate to Klokinator, send paypal gifts to Klokinator@yahoo.com, but be sure to mark it as a gift or Paypal takes 10%. " + "\n" + "\n" + "Patreon can also be pledged to [here!](https://www.patreon.com/klokinator)" + "\n" + "\n" + "This part consisted of: " + str(len(submission.selftext)) + " characters, " + str(len(str(submission.selftext).split())) + " words, and " + str(wc) + " unique words!" + "\n" + "\n" + "[" + "Previous Part" + "](" + prevurl + ")")
 		file = open('lastpart.txt', 'w')
 		file.write(str(postedcomment.permalink))
 		file.close()
@@ -114,14 +126,10 @@ for submission in subreddit.get_new(limit=1):
 		time.sleep(2)
 		#Add post that was just posted to the index list.
 		tempedit = toedit.selftext
-		putin = tempedit + "\n" + "\n" + "[" + submission.title + "](" + submission.permalink + ")"
+		putin = tempedit + "\n" + "\n" + "**[" + submission.title + "](" + submission.permalink + ")**"
 		time.sleep(2)
 		toedit.edit(putin)
 		time.sleep(2)
-		nxtparts = r.get_submission(lastprt)
-		nxtpart = nxtparts.comments[0]
-		add = nxtpart.body + "\n" + "\n" + "[" + submission.title + "](" + submission.permalink + ")"
-		nxtpart.edit(add)
 		if title[0:4].lower() != "test":
 			#Put all users in the username file into a list, then:
 			for line in file:
