@@ -50,12 +50,18 @@ for message in messages:
 	#If the message talks about subscription, and if the author hasn't already been added and the id isn't done:
 	if "unsubscribe" in str(message.body).lower() and str(message.author) in alreadyin and str(message.id) not in already_done:
 		message.reply("BOT: You've been unsubscribed!")
+		ulist = []
 		f = open("list.txt","r+")
 		d = f.readlines()
+		for line in f:
+				linelen = len(line)
+				newlinelen = linelen -1
+				if line[:newlinelen] not in ulist:
+					ulist.append(line[:newlinelen])
 		f.seek(0)
-		for i in d:
-			if str(message.author) not in i:
-		                f.write(i)
+		for i in ulist:
+			if str(message.author) != i:
+				f.write(i)
 		f.truncate()
 		f.close()
 		already_done.append(message.id)
