@@ -27,11 +27,21 @@ r.login(REDDIT_USERNAME, REDDIT_PASS)
 #		time.sleep(5)
 		#if str(submission.title)[0:4].lower() == "part":
 #Fetches all messages sent to the bot.
+def removel(who):
+	f = open("list.txt","r+")
+	d = f.readlines()
+	f.seek(0)
+	for i in d:
+		if str(who) != i:
+			f.write(i)
+	f.truncate()
+	f.close()
 messages = r.get_messages()
 already_done = []
 alreadyin = []
 #For every message in the messages you just fetched:
 for message in messages:
+	print("Opening message!")
 	#Open the username list
 	file = open('list.txt', 'r+')
 	#Add names from a username to a list and post ids to another.
@@ -50,29 +60,27 @@ for message in messages:
 	#If the message talks about subscription, and if the author hasn't already been added and the id isn't done:
 	if "unsubscribe" in str(message.body).lower() and str(message.author) in alreadyin and str(message.id) not in already_done:
 		message.reply("BOT: You've been unsubscribed!")
-		ulist = []
 		f = open("list.txt","r+")
 		d = f.readlines()
-		for line in f:
-				linelen = len(line)
-				newlinelen = linelen -1
-				if line[:newlinelen] not in ulist:
-					ulist.append(line[:newlinelen])
 		f.seek(0)
-		for i in ulist:
-			if str(message.author) != i:
-				f.write(i)
+		for i in d:
+			if str(message.author) not in i:
+		                f.write(i)
 		f.truncate()
 		f.close()
 		already_done.append(message.id)
 		otherfile.write(str(message.id) + "\n")
 	elif "subscribe" in str(message.body).lower() and str(message.author) not in alreadyin and str(message.id) not in already_done:
+		print("Adding someone! - " + str(message.author))
 		#Double check to attempt to double-post proof.
 		if str(message.author) not in alreadyin:
 			#Write the sender's name in the username list.
-			file.write(str(message.author) + "\n")
 			#Tells the sender they've been added.
-			message.reply("BOT: Thanks, you've been added to the list!")
+			try:
+				file.write(str(message.author) + "\n")
+				message.reply("BOT: Thanks, you've been added to the list!")
+			except Exception as e:
+				print(e)
 			time.sleep(2)
 			#Adds their name to the ID list and stuff.
 			alreadyin.append(message.author)
@@ -108,7 +116,7 @@ for submission in subreddit.get_new(limit=1):
 		todo = []
 		nxtparts = r.get_submission(lastprt)
 		nxtpart = nxtparts.comments[0]
-		add = nxtpart.body + "\n" + "\n" + "[" + submission.title + "](" + submission.permalink + ")"
+		add = nxtpart.body + "\n" + "\n" + "**[" + submission.title + "](" + submission.permalink + ")**"
 		nxtpart.edit(add)
 		prev = r.get_info(thing_id=nxtpart.parent_id)
 		prevurl = prev.permalink
@@ -132,7 +140,7 @@ for submission in subreddit.get_new(limit=1):
 		time.sleep(2)
 		#Add post that was just posted to the index list.
 		tempedit = toedit.selftext
-		putin = tempedit + "\n" + "\n" + "**[" + submission.title + "](" + submission.permalink + ")**"
+		putin = tempedit + "\n" + "\n" + "[" + submission.title + "](" + submission.permalink + ")"
 		time.sleep(2)
 		toedit.edit(putin)
 		time.sleep(2)
@@ -170,6 +178,8 @@ for submission in subreddit.get_new(limit=1):
 					f = open('offenders.txt','r+')
 					f.write(name + "\n")
 					f.close()
+					torem = name + "\n"
+					removel(torem)
 				time.sleep(1)
 			file.close()
 	else:

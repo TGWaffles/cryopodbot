@@ -23,9 +23,12 @@ x=datetime.today()
 fixit = []
 print("1")
 print(str(datetime.now().hour))
-def postpart(totitle, totext, secs):
+def postpart(po, secs):
 	cryo = r.get_subreddit('thecryopodtohell')
 	time.sleep(secs)
+	upd = r.get_submission(url=str(po.permalink))
+	totext = upd.selftext
+	totitle = upd.title
 	r.submit(cryo, totitle, totext)
 	print("1")
 print("1")
@@ -40,8 +43,13 @@ for submission in subreddit.get_new(limit=1):
 		newlinelen = linelen - 1
 		if line[:newlinelen] not in fixit:
 			fixit.append(line[:newlinelen])
+	file.seek(0)
+	file.close()
 	if str(author).lower() == "klokinator" and title[0:4].lower() == "part" and id not in fixit or str(author).lower() == "thomas1672" and title[0:4].lower() == "test" and id not in fixit:
 		print("FOUND")
+		file = open('parts.txt','r+')
+		file.write(id + "\n")
+		file.close()
 		try:
 			print("TRYING")
 			tz = submission.comments[0]
@@ -64,7 +72,6 @@ for submission in subreddit.get_new(limit=1):
 				secs = int(mins) * 60
 				tz.reply("Set for the time: " + str(tz1) + " on: " + str(x.day) + "/" + str(now.month))
 			print(str(secs))
-			postpart(totitle, totext, secs)
-			file.write(id + "\n")
+			postpart(submission, secs)
 		except Exception as e:
 			print(str(e))

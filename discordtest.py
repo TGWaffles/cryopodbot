@@ -3,6 +3,7 @@ import asyncio
 import random
 import requests
 import re
+import os
 import psutil
 import time
 import aiohttp
@@ -158,39 +159,44 @@ async def on_message(message):
 			append = "\n" + "Wordcount of this part was: " + str(len(str(post.selftext).split())) + ", the character count was: " + str(len(str(post.selftext))) + " and the unique word count was: " + str(await uwordcount(post.selftext))
 			client.loop.create_task(discordify(text, message.channel, append))
 	elif message.content.startswith('!part'):
+		found = False
 		print("Message author: " + str(message.author) + " Says: " + str(message.content))
 		number = str(message.content).split()[1]
 		query = "Part " + number
 		if message.server == client.get_server('226084200405663754'):
 			for submission in r.search(str(query), subreddit='thecryopodtohell'):
-				author = submission.author
-				title = str(submission.title)
-				id = str(submission.id)
-				if str(author).lower() == "klokinator" and title.startswith(query):
-					post = submission
-					text = str(post.selftext)
-					uwc = []
-					wc = 0
-					for i in str(post.selftext).split():
-						if i not in uwc:
-							wc += 1
-							uwc.append(i)
-					fulltosay = str(post.title) + "\n" + str(post.permalink) + "\n" + "Wordcount of this part was: " + str(len(str(post.selftext).split())) + ", the character count was: " + str(len(str(text))) + " and the unique word count was: " + str(wc)
-					tmp = await client.send_message(message.channel, fulltosay)
-					await asyncio.sleep(120)
-					await client.delete_message(tmp)
-					await client.delete_message(message)
+				if found == False:
+					author = submission.author
+					title = str(submission.title)
+					id = str(submission.id)
+					if str(author).lower() == "klokinator" and title.startswith(query):
+						post = submission
+						text = str(post.selftext)
+						uwc = []
+						wc = 0
+						for i in str(post.selftext).split():
+							if i not in uwc:
+								wc += 1
+								uwc.append(i)
+						fulltosay = str(post.title) + "\n" + str(post.permalink) + "\n" + "Wordcount of this part was: " + str(len(str(post.selftext).split())) + ", the character count was: " + str(len(str(text))) + " and the unique word count was: " + str(wc)
+						tmp = await client.send_message(message.channel, fulltosay)
+						await asyncio.sleep(120)
+						await client.delete_message(tmp)
+						await client.delete_message(message)
+						found = True
 		else:
 			for submission in r.search(str(query), subreddit='thecryopodtohell'):
-				author = submission.author
-				title = str(submission.title)
-				id = str(submission.id)
-				if str(author).lower() == "klokinator" and title.startswith(query):
-					post = submission
-					text = str(post.selftext)
-					title = await client.send_message(message.channel, str(post.title))
-					append = "\n" + "Wordcount of this part was: " + str(len(str(post.selftext).split())) + ", the character count was: " + str(len(str(post.selftext))) + " and the unique word count was: " + str(await uwordcount(post.selftext))
-					client.loop.create_task(discordify(text, message.channel, append))
+				if found == False:
+					author = submission.author
+					title = str(submission.title)
+					id = str(submission.id)
+					if str(author).lower() == "klokinator" and title.startswith(query):
+						post = submission
+						text = str(post.selftext)
+						title = await client.send_message(message.channel, str(post.title))
+						append = "\n" + "Wordcount of this part was: " + str(len(str(post.selftext).split())) + ", the character count was: " + str(len(str(post.selftext))) + " and the unique word count was: " + str(await uwordcount(post.selftext))
+						client.loop.create_task(discordify(text, message.channel, append))
+						found = True
 	elif message.content.startswith('!stats'):
 		if str(message.author).lower() == "tgwaffles#5354" or str(message.author).lower() == "klokinator#0278":
 			print(str(message.content))
@@ -252,12 +258,35 @@ async def on_message(message):
 			tmp = await client.send_message(message.channel, "Pfft, no.")
 			await asyncio.sleep(30)
 			await client.delete_message(tmp)
+	#Code for changing my role's colour!
+	elif message.content.startswith('!colour'):
+		if str(message.author).lower() == "tgwaffles#5354":
+			brole = discord.utils.get(client.get_server('226084200405663754').roles, name='Bot')
+			bcol = brole.colour
+			erole = discord.utils.get(client.get_server('226084200405663754').roles, name='@everyone')
+			ecol = erole.colour
+			curole = discord.utils.get(client.get_server('226084200405663754').roles, name='Bot Dev')
+			cucol = curole.colour
+			if cucol == bcol:
+				await client.edit_role(client.get_server('226084200405663754'), curole, colour=ecol)
+			else:
+				await client.edit_role(client.get_server('226084200405663754'), curole, colour=bcol)
+	elif message.content.startswith('!reboot'):
+		if str(message.author).lower() == "tgwaffles#5354" or str(message.author).lower() == "klokinator#0278":
+			tmp = await client.send_message(message.channel, "Restarting!")
+			os.system('shutdown -r -t now now')
+			await asyncio.sleep(5)
+			await client.edit_message(tmp, "Reboot failed!")
+		else:
+			tmp = await client.send_message(message.channel, "Heh... No perms, I see? Not happening :)")
+			await asyncio.sleep(20)
+			await client.delete_message(tmp)
+			await client.delete_message(message)
 async def new_part_checker():
 	await client.wait_until_ready()
 	while True:
 		fixit = []
-		file = open('newpart.txt', 'r')
-		for submission in subreddit.get_new(limit=1):
+		for submission in subreddit.get_new(limit=3):
 			author = submission.author
 			title = str(submission.title)
 			id = str(submission.id)
@@ -267,7 +296,7 @@ async def new_part_checker():
 				newlinelen = linelen - 1
 				if line[:newlinelen] not in fixit:
 					fixit.append(line[:newlinelen])
-			if str(author).lower() == "klokinator" and title[0:4].lower() == "part" and id not in fixit: #or str(author).lower() == "thomas1672" and title[0:4].lower() == "test" and id not in fixit:
+			if str(author).lower() == "klokinator" and title.lower().startswith('part') and id not in fixit: #or str(author).lower() == "thomas1672" and title[0:4].lower() == "test" and id not in fixit:
 				file.write(id + "\n")
 				file.close()
 				uwc = []
