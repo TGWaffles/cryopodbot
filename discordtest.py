@@ -1,3 +1,4 @@
+#Imports all the functions useful for the bot.
 import discord
 import asyncio
 import random
@@ -10,6 +11,7 @@ import aiohttp
 import math
 import praw
 from pw_bot import *
+#Defines info about the bot and regular PRAW info for reddit post-grabbing.
 client = discord.Client()
 user_agent = ("CryoChecker 1.0")
 r = praw.Reddit(user_agent = user_agent)
@@ -20,6 +22,10 @@ r.config.store_json_result = True
 async def on_ready():
 	print('LOGGED IN!')
 client.aiosession = aiohttp.ClientSession(loop=client.loop)
+global enabled
+enabled = 0
+global apenabled
+apenabled = 0
 async def uwordcount(text):
 	uwc = []
 	wc = 0
@@ -198,50 +204,118 @@ async def on_message(message):
 						client.loop.create_task(discordify(text, message.channel, append))
 						found = True
 	elif message.content.startswith('!stats'):
-		if str(message.author).lower() == "tgwaffles#5354" or str(message.author).lower() == "klokinator#0278":
-			print(str(message.content))
-			stat = ""
-			totups = 0
-			totproc = 0
-			totrat = 0
-			totwc = 0
-			totuwc = 0
-			totcc = 0
-			biggestpart = 0
-			biggesttitle = ""
-			tmp = await client.send_message(message.channel, "Starting statter now! Processed: 0")
-			for submission in subreddit.get_new(limit=750):
-				author = submission.author
-				title = str(submission.title)
-				id = str(submission.id)
-				if title.startswith('Part') and str(author).lower() == "klokinator":
-					url = submission.permalink
-					html = str(requests.get(url,headers = {'User-agent':'...'}).content)
-					ratio = re.findall(';\((.*?)% upvoted\)',html)[0]
-					wordcount = str(len(str(submission.selftext).split()))
-					charcount = str(len(str(submission.selftext)))
-					unwordcount = str(await uwordcount(submission.selftext))
-					stat = title + ": Upvotes: " + str(submission.ups) + ", Ratio: " + ratio + "%" + ", Wordcount: " + wordcount + ", Character Count: " + charcount + ", Unique Wordcount: " + unwordcount + "\n" + stat
-					totups += int(submission.ups)
-					totproc += 1
-					totrat += int(ratio)
-					totwc += int(wordcount)
-					totuwc += int(unwordcount)
-					totcc += int(charcount)
-					if int(charcount) > biggestpart:
-						biggestpart = int(charcount)
-						biggesttitle = title
-					print(str(totproc))
-					await client.edit_message(tmp, "Starting statter now! Processed: " + str(totproc) + ", current CPU usage: " + str(psutil.cpu_percent(interval=None)) + "%")
-					await asyncio.sleep(0.25)
-			append = "\n" + "Total upvotes: " + str(totups) + ", total submissions processed: " + str(totproc) + ", average upvotes per submission: " + str(round(float(totups / totproc), 2)) + ", average upvote ratio: " + str(round(float(totrat / totproc), 2)) + "%" + ", total wordcount: " + str(totwc) + ", total character count: " + str(totcc) + ", total unique wordcount: " + str(totuwc) + ", average wordcount: " + str(round(float(totwc / totproc), 2)) + ", average character count: " + str(round(float(totcc / totproc), 2)) + ", average unique wordcount (per-post): " + str(round(float(totuwc / totproc), 2)) + ", largest part: " + str(biggesttitle) + " kloking in at over " + str(biggestpart) + " characters!"
-			client.loop.create_task(discordify(stat, message.channel, append, deletemess=True, deletetime=600, character_limit=1900))
-			await asyncio.sleep(30)
-			await client.delete_message(tmp)
+		global enabled
+		global stat
+		global totups
+		global totproc
+		global totrat
+		global totwc
+		global totuwc
+		global totcc
+		global biggestpart
+		global biggesttitle
+		global enabled
+		global finished
+		global stat
+		global append
+		if enabled == 0:
+			enabled = 1
+			finished = 0
+			if str(message.author).lower() == "tgwaffles#5354" or str(message.author).lower() == "klokinator#0278":
+				print(str(message.content))
+				stat = ""
+				totups = 0
+				totproc = 0
+				totrat = 0
+				totwc = 0
+				totuwc = 0
+				totcc = 0
+				biggestpart = 0
+				biggesttitle = ""
+				tmp = await client.send_message(message.channel, "Starting statter now! Processed: 0")
+				for submission in subreddit.get_new(limit=750):
+					author = submission.author
+					title = str(submission.title)
+					id = str(submission.id)
+					if title.startswith('Part') and str(author).lower() == "klokinator":
+						url = submission.permalink
+						html = str(requests.get(url,headers = {'User-agent':'...'}).content)
+						ratio = re.findall(';\((.*?)% upvoted\)',html)[0]
+						wordcount = str(len(str(submission.selftext).split()))
+						charcount = str(len(str(submission.selftext)))
+						unwordcount = str(await uwordcount(submission.selftext))
+						stat = title + ": Upvotes: " + str(submission.ups) + ", Ratio: " + ratio + "%" + ", Wordcount: " + wordcount + ", Character Count: " + charcount + ", Unique Wordcount: " + unwordcount + "\n" + stat
+						totups += int(submission.ups)
+						totproc += 1
+						totrat += int(ratio)
+						totwc += int(wordcount)
+						totuwc += int(unwordcount)
+						totcc += int(charcount)
+						if int(charcount) > biggestpart:
+							biggestpart = int(charcount)
+							biggesttitle = title
+						print(str(totproc))
+						await client.edit_message(tmp, "Starting statter now! Processed: " + str(totproc) + ", current CPU usage: " + str(psutil.cpu_percent(interval=None)) + "%")
+						await asyncio.sleep(0.25)
+				append = "\n" + "Total upvotes: " + str(totups) + ", total submissions processed: " + str(totproc) + ", average upvotes per submission: " + str(round(float(totups / totproc), 2)) + ", average upvote ratio: " + str(round(float(totrat / totproc), 2)) + "%" + ", total wordcount: " + str(totwc) + ", total character count: " + str(totcc) + ", total unique wordcount: " + str(totuwc) + ", average wordcount: " + str(round(float(totwc / totproc), 2)) + ", average character count: " + str(round(float(totcc / totproc), 2)) + ", average unique wordcount (per-post): " + str(round(float(totuwc / totproc), 2)) + ", largest part: " + str(biggesttitle) + " kloking in at over " + str(biggestpart) + " characters!"
+				client.loop.create_task(discordify(stat, message.channel, append, deletemess=True, deletetime=600, character_limit=1900))
+				await asyncio.sleep(30)
+				await client.delete_message(tmp)
+			elif message.server == client.get_server('226084200405663754'):
+				tmp = await client.send_message(message.channel, "Not in this channel, " + str(message.author.mention) + "!")
+				await asyncio.sleep(30)
+				await client.delete_message(tmp)
+			else:
+				print(str(message.content))
+				stat = ""
+				totups = 0
+				totproc = 0
+				totrat = 0
+				totwc = 0
+				totuwc = 0
+				totcc = 0
+				biggestpart = 0
+				biggesttitle = ""
+				tmp = await client.send_message(message.channel, "Starting statter now! Processed: 0")
+				for submission in subreddit.get_new(limit=750):
+					author = submission.author
+					title = str(submission.title)
+					id = str(submission.id)
+					if title.startswith('Part') and str(author).lower() == "klokinator":
+						url = submission.permalink
+						html = str(requests.get(url,headers = {'User-agent':'...'}).content)
+						ratio = re.findall(';\((.*?)% upvoted\)',html)[0]
+						wordcount = str(len(str(submission.selftext).split()))
+						charcount = str(len(str(submission.selftext)))
+						unwordcount = str(await uwordcount(submission.selftext))
+						stat = title + ": Upvotes: " + str(submission.ups) + ", Ratio: " + ratio + "%" + ", Wordcount: " + wordcount + ", Character Count: " + charcount + ", Unique Wordcount: " + unwordcount + "\n" + stat
+						totups += int(submission.ups)
+						totproc += 1
+						totrat += int(ratio)
+						totwc += int(wordcount)
+						totuwc += int(unwordcount)
+						totcc += int(charcount)
+						if int(charcount) > biggestpart:
+							biggestpart = int(charcount)
+							biggesttitle = title
+						print(str(totproc))
+						await client.edit_message(tmp, "Starting statter now! Processed: " + str(totproc) + ", current CPU usage: " + str(psutil.cpu_percent(interval=None)) + "%")
+						await asyncio.sleep(0.25)
+				append = "\n" + "Total upvotes: " + str(totups) + ", total submissions processed: " + str(totproc) + ", average upvotes per submission: " + str(round(float(totups / totproc), 2)) + ", average upvote ratio: " + str(round(float(totrat / totproc), 2)) + "%" + ", total wordcount: " + str(totwc) + ", total character count: " + str(totcc) + ", total unique wordcount: " + str(totuwc) + ", average wordcount: " + str(round(float(totwc / totproc), 2)) + ", average character count: " + str(round(float(totcc / totproc), 2)) + ", average unique wordcount (per-post): " + str(round(float(totuwc / totproc), 2)) + ", largest part: " + str(biggesttitle) + " kloking in at over " + str(biggestpart) + " characters!"
+				client.loop.create_task(discordify(stat, message.channel, append, deletemess=True, deletetime=600, character_limit=1900))
+				finished = 1
+				enabled = 0
+				await asyncio.sleep(30)
+				await client.delete_message(tmp)
 		else:
-			tmp = await client.send_message(message.channel, "You DO understand how processor-heavy this task is, right? I've got a second of time in-between each submission to handle all other requests... And you think I'm going to do this for you? PERMISSION DENIED, " + str(message.author.mention) + "!")
-			await asyncio.sleep(30)
-			await client.delete_message(tmp)
+			if message.server != client.get_server('226084200405663754'):
+				tmp = await client.send_message(message.channel, "Starting statter now! Processed: " + str(totproc))
+				while finished == 0:
+					await client.edit_message(tmp, "Starting statter now! Processed: " + str(totproc))
+					await asyncio.sleep(0.25)
+				client.loop.create_task(discordify(stat, message.channel, append, deletemess=True, deletetime=600, character_limit=1900))
+				await asyncio.sleep(30)
+				await client.delete_message(tmp)
 	elif message.content.startswith('!cancel'):
 		if str(message.author).lower() == "tgwaffles#5354":
 			tmp = await client.send_message(message.channel, "ATTEMPTING TO CANCEL ALL RUNNING TASKS!")
@@ -282,6 +356,37 @@ async def on_message(message):
 			await asyncio.sleep(20)
 			await client.delete_message(tmp)
 			await client.delete_message(message)
+	elif message.content.startswith('!allparts'):
+		global apenabled
+		global aptotproc
+		global aptosend
+		global apappend
+		global apfinished
+		if apenabled == 0:
+			apenabled = 1
+			apfinished = 0
+			aptotproc = 0
+			if message.server != client.get_server('226084200405663754'):
+				tmp = await client.send_message(message.channel, "Starting partfinder now! Processed: 0")
+				tosend = ""
+				for submission in subreddit.get_new(limit=750):
+					author = submission.author
+					title = str(submission.title)
+					id = str(submission.id)
+					if title.startswith('Part') and str(author).lower() == "klokinator":
+						aptosend = "~~                                                                                                                                                                                                                                        ~~" + title + "\n" + str(submission.selftext) + "\n" + "\n" + tosend
+						aptotproc += 1
+					await client.edit_message(tmp, "Starting partfinder now! Processed: " + str(aptotproc) + ", current CPU usage: " + str(psutil.cpu_percent(interval=None)) + "%")
+					await asyncio.sleep(0.5)
+				apappend = "\n" + "\n" + "That took me a long time. You should be grateful."
+				client.loop.create_task(discordify(aptosend, message.channel, apappend))
+		else:
+			if message.server != client.get_server('226084200405663754'):
+				tmp = await client.send_message(message.channel, "Starting partfinder now! Processed: " + str(aptotproc) + ", current CPU usage: " + str(psutil.cpu_percent(interval=None)) + "%")
+				while apfinished == 0:
+					await client.edit_message(tmp, "Starting partfinder now! Processed: " + str(aptotproc))
+					await asyncio.sleep(0.25)
+				client.loop.create_task(discordify(aptosend, message.channel, apappend))
 async def new_part_checker():
 	await client.wait_until_ready()
 	while True:
