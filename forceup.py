@@ -13,7 +13,7 @@ r = praw.Reddit("Klok-Poster")
 o = OAuth2Util.OAuth2Util(r)
 o.refresh(force=True)
 cryo = r.get_subreddit('thecryopodtohell')
-upd = r.get_submission(url=str("https://www.reddit.com/r/klokscheduler/comments/5l8yea/part_292/"))
+upd = r.get_submission(url=str("https://www.reddit.com/r/klokscheduler/comments/5npysl/part_301/"))
 totext = upd.selftext
 totitle = upd.title
 r.submit(cryo, totitle, totext)

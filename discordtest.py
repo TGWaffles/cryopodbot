@@ -374,12 +374,14 @@ async def on_message(message):
 					title = str(submission.title)
 					id = str(submission.id)
 					if title.startswith('Part') and str(author).lower() == "klokinator":
-						aptosend = "~~                                                                                                                                                                                                                                        ~~" + title + "\n" + str(submission.selftext) + "\n" + "\n" + tosend
+						aptosend = "~~                                                                                                                                                                                                                                        ~~" + title + "\n" + str(submission.selftext) + "\n" + "\n" + aptosend
 						aptotproc += 1
 					await client.edit_message(tmp, "Starting partfinder now! Processed: " + str(aptotproc) + ", current CPU usage: " + str(psutil.cpu_percent(interval=None)) + "%")
 					await asyncio.sleep(0.5)
 				apappend = "\n" + "\n" + "That took me a long time. You should be grateful."
 				client.loop.create_task(discordify(aptosend, message.channel, apappend))
+				apfinished = 1
+				apenabled = 0
 		else:
 			if message.server != client.get_server('226084200405663754'):
 				tmp = await client.send_message(message.channel, "Starting partfinder now! Processed: " + str(aptotproc) + ", current CPU usage: " + str(psutil.cpu_percent(interval=None)) + "%")
