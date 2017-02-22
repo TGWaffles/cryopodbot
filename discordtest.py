@@ -240,7 +240,11 @@ async def on_message(message):
 					if title.startswith('Part') and str(author).lower() == "klokinator":
 						url = submission.permalink
 						html = str(requests.get(url,headers = {'User-agent':'...'}).content)
-						ratio = re.findall(';\((.*?)% upvoted\)',html)[0]
+						try:
+							ratio = re.findall(';\((.*?)% upvoted\)',html)[0]
+						except Exception as e:
+							print(e)
+							ratio = float(totrat / totproc)
 						wordcount = str(len(str(submission.selftext).split()))
 						charcount = str(len(str(submission.selftext)))
 						unwordcount = str(await uwordcount(submission.selftext))
@@ -259,6 +263,8 @@ async def on_message(message):
 						await asyncio.sleep(0.25)
 				append = "\n" + "Total upvotes: " + str(totups) + ", total submissions processed: " + str(totproc) + ", average upvotes per submission: " + str(round(float(totups / totproc), 2)) + ", average upvote ratio: " + str(round(float(totrat / totproc), 2)) + "%" + ", total wordcount: " + str(totwc) + ", total character count: " + str(totcc) + ", total unique wordcount: " + str(totuwc) + ", average wordcount: " + str(round(float(totwc / totproc), 2)) + ", average character count: " + str(round(float(totcc / totproc), 2)) + ", average unique wordcount (per-post): " + str(round(float(totuwc / totproc), 2)) + ", largest part: " + str(biggesttitle) + " kloking in at over " + str(biggestpart) + " characters!"
 				client.loop.create_task(discordify(stat, message.channel, append, deletemess=True, deletetime=600, character_limit=1900))
+				finished = 1
+				enabled = 0
 				await asyncio.sleep(30)
 				await client.delete_message(tmp)
 			elif message.server == client.get_server('226084200405663754'):
@@ -305,8 +311,6 @@ async def on_message(message):
 				client.loop.create_task(discordify(stat, message.channel, append, deletemess=True, deletetime=600, character_limit=1900))
 				finished = 1
 				enabled = 0
-				await asyncio.sleep(30)
-				await client.delete_message(tmp)
 		else:
 			if message.server != client.get_server('226084200405663754'):
 				tmp = await client.send_message(message.channel, "Starting statter now! Processed: " + str(totproc))
@@ -314,8 +318,6 @@ async def on_message(message):
 					await client.edit_message(tmp, "Starting statter now! Processed: " + str(totproc))
 					await asyncio.sleep(0.25)
 				client.loop.create_task(discordify(stat, message.channel, append, deletemess=True, deletetime=600, character_limit=1900))
-				await asyncio.sleep(30)
-				await client.delete_message(tmp)
 	elif message.content.startswith('!cancel'):
 		if str(message.author).lower() == "tgwaffles#5354":
 			tmp = await client.send_message(message.channel, "ATTEMPTING TO CANCEL ALL RUNNING TASKS!")
@@ -362,6 +364,7 @@ async def on_message(message):
 		global aptosend
 		global apappend
 		global apfinished
+		aptosend = ""
 		if apenabled == 0:
 			apenabled = 1
 			apfinished = 0
@@ -392,31 +395,34 @@ async def on_message(message):
 async def new_part_checker():
 	await client.wait_until_ready()
 	while True:
-		fixit = []
-		for submission in subreddit.get_new(limit=3):
-			author = submission.author
-			title = str(submission.title)
-			id = str(submission.id)
-			file = open('donediscord.txt','r+')
-			for line in file:
-				linelen = len(line)
-				newlinelen = linelen - 1
-				if line[:newlinelen] not in fixit:
-					fixit.append(line[:newlinelen])
-			if str(author).lower() == "klokinator" and title.lower().startswith('part') and id not in fixit: #or str(author).lower() == "thomas1672" and title[0:4].lower() == "test" and id not in fixit:
-				file.write(id + "\n")
-				file.close()
-				uwc = []
-				wc = 0
-				for i in str(submission.selftext).split():
-					if i not in uwc:
-						wc += 1
-						uwc.append(i)
-				topost = "@everyone - " + title + " - <" + submission.permalink + ">" + " Wordcount of this part: " + str(len(str(submission.selftext).split())) + ", character count: " + str(len(str(submission.selftext))) + " unique word count: " + str(wc)
-				tmp = await client.send_message(client.get_channel('226088087996989450'), topost)
-			else:
-				file.close()
-		await asyncio.sleep(15)
+		try:
+			fixit = []
+			for submission in subreddit.get_new(limit=3):
+				author = submission.author
+				title = str(submission.title)
+				id = str(submission.id)
+				file = open('donediscord.txt','r+')
+				for line in file:
+					linelen = len(line)
+					newlinelen = linelen - 1
+					if line[:newlinelen] not in fixit:
+						fixit.append(line[:newlinelen])
+				if str(author).lower() == "klokinator" and title.lower().startswith('part') and id not in fixit: #or str(author).lower() == "thomas1672" and title[0:4].lower() == "test" and id not in fixit:
+					file.write(id + "\n")
+					file.close()
+					uwc = []
+					wc = 0
+					for i in str(submission.selftext).split():
+						if i not in uwc:
+							wc += 1
+							uwc.append(i)
+					topost = "@everyone - " + title + " - <" + submission.permalink + ">" + " Wordcount of this part: " + str(len(str(submission.selftext).split())) + ", character count: " + str(len(str(submission.selftext))) + " unique word count: " + str(wc)
+					tmp = await client.send_message(client.get_channel('226088087996989450'), topost)
+				else:
+					file.close()
+			await asyncio.sleep(15)
+		except Exception as e:
+			print(e)
 async def delete_this_message(mess, whento=0):
 	await asyncio.sleep(whento)
 	await client.delete_message(mess)
