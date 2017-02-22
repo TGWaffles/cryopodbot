@@ -238,29 +238,32 @@ async def on_message(message):
 					title = str(submission.title)
 					id = str(submission.id)
 					if title.startswith('Part') and str(author).lower() == "klokinator":
-						url = submission.permalink
-						html = str(requests.get(url,headers = {'User-agent':'...'}).content)
 						try:
-							ratio = re.findall(';\((.*?)% upvoted\)',html)[0]
+							url = submission.permalink
+							html = str(requests.get(url,headers = {'User-agent':'...'}).content)
+							try:
+								ratio = re.findall(';\((.*?)% upvoted\)',html)[0]
+							except Exception as e:
+								print(e)
+								ratio = float(totrat / totproc)
+							wordcount = str(len(str(submission.selftext).split()))
+							charcount = str(len(str(submission.selftext)))
+							unwordcount = str(await uwordcount(submission.selftext))
+							stat = title + ": Upvotes: " + str(submission.ups) + ", Ratio: " + str(ratio) + "%" + ", Wordcount: " + str(wordcount) + ", Character Count: " + str(charcount) + ", Unique Wordcount: " + str(unwordcount) + "\n" + str(stat)
+							totups += int(submission.ups)
+							totproc += 1
+							totrat += int(ratio)
+							totwc += int(wordcount)
+							totuwc += int(unwordcount)
+							totcc += int(charcount)
+							if int(charcount) > biggestpart:
+								biggestpart = int(charcount)
+								biggesttitle = title
+							print(str(totproc))
+							await client.edit_message(tmp, "Starting statter now! Processed: " + str(totproc) + ", current CPU usage: " + str(psutil.cpu_percent(interval=None)) + "%")
+							await asyncio.sleep(0.25)
 						except Exception as e:
 							print(e)
-							ratio = float(totrat / totproc)
-						wordcount = str(len(str(submission.selftext).split()))
-						charcount = str(len(str(submission.selftext)))
-						unwordcount = str(await uwordcount(submission.selftext))
-						stat = title + ": Upvotes: " + str(submission.ups) + ", Ratio: " + ratio + "%" + ", Wordcount: " + wordcount + ", Character Count: " + charcount + ", Unique Wordcount: " + unwordcount + "\n" + stat
-						totups += int(submission.ups)
-						totproc += 1
-						totrat += int(ratio)
-						totwc += int(wordcount)
-						totuwc += int(unwordcount)
-						totcc += int(charcount)
-						if int(charcount) > biggestpart:
-							biggestpart = int(charcount)
-							biggesttitle = title
-						print(str(totproc))
-						await client.edit_message(tmp, "Starting statter now! Processed: " + str(totproc) + ", current CPU usage: " + str(psutil.cpu_percent(interval=None)) + "%")
-						await asyncio.sleep(0.25)
 				append = "\n" + "Total upvotes: " + str(totups) + ", total submissions processed: " + str(totproc) + ", average upvotes per submission: " + str(round(float(totups / totproc), 2)) + ", average upvote ratio: " + str(round(float(totrat / totproc), 2)) + "%" + ", total wordcount: " + str(totwc) + ", total character count: " + str(totcc) + ", total unique wordcount: " + str(totuwc) + ", average wordcount: " + str(round(float(totwc / totproc), 2)) + ", average character count: " + str(round(float(totcc / totproc), 2)) + ", average unique wordcount (per-post): " + str(round(float(totuwc / totproc), 2)) + ", largest part: " + str(biggesttitle) + " kloking in at over " + str(biggestpart) + " characters!"
 				client.loop.create_task(discordify(stat, message.channel, append, deletemess=True, deletetime=600, character_limit=1900))
 				finished = 1
