@@ -24,13 +24,19 @@ fixit = []
 print("1")
 print(str(datetime.now().hour))
 def postpart(po, secs):
-	cryo = r.get_subreddit('thecryopodtohell')
-	time.sleep(secs)
-	upd = r.get_submission(url=str(po.permalink))
-	totext = upd.selftext
-	totitle = upd.title
-	r.submit(cryo, totitle, totext)
-	print("1")
+	try:
+		cryo = r.get_subreddit('thecryopodtohell')
+		time.sleep(secs)
+		upd = r.get_submission(url=str(po.permalink))
+		totext = upd.selftext
+		totitle = upd.title
+		postedpart = r.submit(cryo, totitle, totext)
+		print("1")
+		po.delete()
+	except Exception as e:
+		file = open('error.txt','r+')
+		file.write(str(e))
+		file.close()
 print("1")
 for submission in subreddit.get_new(limit=1):
 	print("1")
