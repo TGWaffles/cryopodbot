@@ -10,38 +10,36 @@ ALL_WEBSERIES_PART_IDS_FILE = "parts.txt"
 LATEST_BOT_STICKY_COMMENT_FILE = "lastpart.txt"
 INDEX_LIST_POST_ID = "56tvbw"
 OFFENDERS_FILE = "offenders.txt"
-
 MESSAGE_BOT_LINK = "https://np.reddit.com/message/compose/?to=CryopodBot"
 SUBSCRIBE_LINK = MESSAGE_BOT_LINK + "&subject=Subscribe&message=Subscribe"
 UNSUBSCRIBE_LINK = MESSAGE_BOT_LINK + "&subject=unsubscribe&message=unsubscribe"
 PAYPAL_EMAIL = "Klokinator@yahoo.com"
 PATREON_LINK = "https://www.patreon.com/klokinator"
 FOOTER_MESSAGE = """\
-[Click Here to be PM'd new updates!] (%(sub_link)s)\
-[Click Here to unsubscribe!] (%(unsub_link)s)\n\n\n\
+[Click Here to be PM'd new updates!](%(sub_link)s)\
+[Click Here to unsubscribe!](%(unsub_link)s)\n\n\n\
 If you want to donate to Klokinator, send paypal gifts to %(paypal_email)s, \
 but be sure to mark it as a gift or Paypal takes 10 percent.\n\n\
-Patreon can also be pledged to [here!] (%(patreon_link)s)\n\n\
+Patreon can also be pledged to [here!](%(patreon_link)s)\n\n\
+[Previous Part](%(prev_part)s)
 """ % dict(sub_link=SUBSCRIBE_LINK, unsub_link=UNSUBSCRIBE_LINK,
            paypal_email=PAYPAL_EMAIL, patreon_link=PATREON_LINK)
 
 BOT_POST_COMMENT_RESPONSE = """\
 Hi. I'm a bot, bleep bloop.\n\n\ If you're about to post regarding a typo and this Part was just posted, \
 please wait ten minutes, refresh, and then see if it's still there!\n\n\
-Also, if you want to report typos anywhere, please respond to this bot to \
-keep the main post clutter free. Thank you!\n\n\n\
 """ + FOOTER_MESSAGE
 
 # why are there TWO discord links??
 
 BOT_TAGGED_RESPONSES = [\
-    "You called? ;),", "What's up?", "Hey!", "Yo, 'sup?",
+    "You called? ;)", "What's up?", "Hey!", "Yo, 'sup?",
     "Go check out my discord at https://github.com/TGWaffles/cryopodbot",
     "Tagging me in a post can trigger specific things. " + \
     "One of the random replies means I didn't understand what you asked!",
     "Go check out Klok's patreon [here!] (" + PATREON_LINK + ")",
     "I was coded by /u/thomas1672 - direct all questions to him!",
-    "Now taking suggestions for more of these random supplies in the discord!",
+    "Now taking suggestions for more of these random replies in the discord!",
     "Join the discord @ https://discord.gg/EkdeJER"]
 
 BOT_FIRST_COMMENT_RESPONSE = """\
