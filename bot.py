@@ -229,7 +229,7 @@ for comment in subcomments:
 			elif select == 3:
 				comment.reply("Hey!")
 			elif select == 4: 
-				comment.reply("Go check out my discord at https://github.com/TGWaffles/cryopodbot")
+				comment.reply("Go check out my GitHub Repository at https://github.com/TGWaffles/cryopodbot")
 			elif select == 5:
 				comment.reply("Tagging me in a post can trigger specific things. One of the random replies means I didn't understand what you asked!")
 			elif select == 6:
@@ -239,7 +239,7 @@ for comment in subcomments:
 			elif select == 8:
 				comment.reply("I was coded by /u/thomas1672 - direct all questions to him!")
 			elif select == 9:
-				comment.reply("Now taking suggestions for more of these random supplies in the discord!")
+				comment.reply("Now taking suggestions for more of these random replies in the discord!")
 			else:
 				comment.reply("Join the discord @ https://discord.gg/EkdeJER")
 			otherfile.write(str(comment.id) + "\n")
