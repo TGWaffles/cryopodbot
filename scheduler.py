@@ -4,7 +4,6 @@ import sys
 import logging
 import discord
 import asyncio
-import praw
 import pdb
 import re
 import random
