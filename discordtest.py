@@ -34,7 +34,7 @@ async def uwordcount(text):
 			wc += 1
 			uwc.append(i)
 	return wc
-async def discordify(fullmessage, mesc, append="", character_limit=2000, deletemess=False, deletetime=0):
+async def discordify(fullmessage, mesc, append="", character_limit=2000, deletemess=False, deletetime=0, delay=False):
 	messages = []
 	tempmessage = fullmessage
 	while len(tempmessage) > character_limit:
@@ -60,6 +60,8 @@ async def discordify(fullmessage, mesc, append="", character_limit=2000, deletem
 		tmp = await client.send_message(mesc, i)
 		if deletemess == True:
 			client.loop.create_task(delete_this_message(tmp, deletetime))
+		if delay == True:
+			await asyncio.sleep(2)
 @client.event
 async def on_message(message):
 	if message.content.startswith('!optin'):
@@ -218,6 +220,10 @@ async def on_message(message):
 		global finished
 		global stat
 		global append
+		global ehashappened
+		global errmsg
+		global tosenderr
+		ehashappened = False
 		if enabled == 0:
 			enabled = 1
 			finished = 0
@@ -264,8 +270,17 @@ async def on_message(message):
 							await asyncio.sleep(0.25)
 						except Exception as e:
 							print(e)
+							if ehashappened == False:
+								tosenderr = "Error has occurred! Beginning error message!" + "\n" + "\n" + "```" + title + " : " + e + "```"
+								errmsg = await client.send_message(message.channel, tosenderr)
+								ehashappened = True
+							else:
+								lento = len(tosenderr)
+								newlen = lento - 4
+								tosenderr = tosenderr[:newlen] + "\n" + title + " : " + e + "```"
+								await client.edit_message(errmsg, tosenderr)
 				append = "\n" + "Total upvotes: " + str(totups) + ", total submissions processed: " + str(totproc) + ", average upvotes per submission: " + str(round(float(totups / totproc), 2)) + ", average upvote ratio: " + str(round(float(totrat / totproc), 2)) + "%" + ", total wordcount: " + str(totwc) + ", total character count: " + str(totcc) + ", total unique wordcount: " + str(totuwc) + ", average wordcount: " + str(round(float(totwc / totproc), 2)) + ", average character count: " + str(round(float(totcc / totproc), 2)) + ", average unique wordcount (per-post): " + str(round(float(totuwc / totproc), 2)) + ", largest part: " + str(biggesttitle) + " kloking in at over " + str(biggestpart) + " characters!"
-				client.loop.create_task(discordify(stat, message.channel, append, deletemess=True, deletetime=600, character_limit=1900))
+				client.loop.create_task(discordify(stat, message.channel, append, deletemess=True, deletetime=600, character_limit=1900, delay=True))
 				finished = 1
 				enabled = 0
 				await asyncio.sleep(30)
@@ -395,6 +410,9 @@ async def on_message(message):
 					await client.edit_message(tmp, "Starting partfinder now! Processed: " + str(aptotproc))
 					await asyncio.sleep(0.25)
 				client.loop.create_task(discordify(aptosend, message.channel, apappend))
+	elif message.content.startswith('!selfclean'):
+		if str(message.author).lower() == "tgwaffles#5354":
+			client.loop.create_task(self_cleaner())
 async def new_part_checker():
 	await client.wait_until_ready()
 	while True:
