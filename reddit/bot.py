@@ -16,8 +16,8 @@ r = praw.Reddit(user_agent=user_agent)
 # Connects to the TCTH sub.
 subreddit = r.get_subreddit("thecryopodtohell")
 # Logs into Bot's Account from hidden file above.
-o = OAuth2Util.OAuth2Util(r)
-o.refresh(force=True)
+oauth = OAuth2Util.OAuth2Util(r)
+oauth.refresh(force=True)
 
 
 #  for submission in subreddit.get_new(limit = 1):
@@ -30,19 +30,19 @@ o.refresh(force=True)
 # if str(submission.title)[0:4].lower() == "part":
 # Fetches all messages sent to the bot.
 def removel(who):
-    listfile = open("../list.txt", "r+")
+    listfile = open("../user_list.txt", "r+")
     file_lines = listfile.readlines()
     listfile.seek(0)
     for record in file_lines:
         record = record.replace("\n", "")
-        if re.match(str(who), str(record)):
+        if not re.match(str(who), str(record)):
             listfile.write(record + "\n")
     listfile.truncate()
     listfile.close()
 
 
 file = open('../memcount.txt', 'r')
-totamemb = int(str(file.readlines()[0]).split('\n')[0])
+total_members = int(str(file.readlines()[0]).split('\n')[0])
 file.close()
 klokky = r.get_redditor("Klokinator")
 messages = r.get_messages()
@@ -51,7 +51,7 @@ all_subs = "Parts,Patreon,WritingPrompts,Updates,General"
 already_done = []
 alreadyin = []
 # Open the username list
-file = open('../list.txt', 'r+')
+file = open('../user_list.txt', 'r')
 # Add names from a username to a list and post ids to another.
 for line in file:
     try:
@@ -62,8 +62,8 @@ for line in file:
     if name not in alreadyin:
         alreadyin.append(name)
 file.close()
-otherfile = open('../done.txt', 'r+')
-for i in range(2):
+otherfile = open('../done.txt', 'r')
+for user_line in range(2):
     for line in otherfile:
         linelen = len(line)
         newlinelen = linelen - 1
@@ -75,21 +75,22 @@ otherfile.close()
 def manual_pm(groups_addressed, pm_title, body):
     print("Manual PMing")
     user_list = []
-    user_file = open('../list.txt', 'r+')
+    username_file = open('../user_list.txt', 'r')
     if "All" not in groups_addressed:
-        for user_record in user_file:
+        for user_record in username_file:
             has_group = False
-            user_name, subscriptions = str(user_record).split(": ")
+            user_full = user_record.replace("\n", "")
+            user_name, subscriptions = str(user_full).split(": ")
             for subscription in subscriptions.split(","):
                 if not has_group:
                     if subscription in groups_addressed:
                         user_list.append(user_name)
                         has_group = True
     else:
-        for user_record in user_file:
+        for user_record in username_file:
             user_name = str(user_record).split(": ")[0]
             user_list.append(user_name)
-    user_file.close()
+    username_file.close()
     for user_name in user_list:
         try:
             print(str(user_name))
@@ -97,7 +98,7 @@ def manual_pm(groups_addressed, pm_title, body):
         except Exception as ex:
             print(ex)
             print(user_name)
-            offender_file = open('../offenders.txt', 'r+')
+            offender_file = open('../offenders.txt', 'a')
             offender_file.write(user_name + "\n")
             offender_file.close()
             torem = user_name + ".*"
@@ -108,7 +109,7 @@ def manual_pm(groups_addressed, pm_title, body):
 for message in messages:
     if str(message.id) not in already_done:
         print("Opening message!")
-        file = open('../list.txt', 'r+')
+        file = open('../user_list.txt', 'r+')
         # If the message talks about unsubscription, and if the author hasn't already been added and the id isn't done:
         if re.match("unsubscribe.*", str(message.body).lower()) and str(message.author) in alreadyin:
             file.seek(0)
@@ -116,54 +117,54 @@ for message in messages:
                 try:
                     unsub, args = str(message.body).lower().split(": ")
                     args2 = str(message.body).split(": ")[1]
-                    torep = "BOT: You've been unsubscribed from: " + args2
+                    to_reply = "BOT: You've been unsubscribed from: " + args2
                     args = args.split(",")
                     for argument in args:
-                        f = open("../list.txt", "r+")
-                        d = f.readlines()
+                        f = open("../user_list.txt", "r+")
+                        user_file = f.readlines()
                         f.seek(0)
-                        for i in d:
+                        for user_line in user_file:
                             lf = str(message.author) + ": " + ".*"
-                            if re.match(lf, i):
-                                pers, subs = i.split(": ")
+                            if re.match(lf, user_line):
+                                pers, subs = user_line.split(": ")
                                 newthing = str(pers) + ": "
                                 subs = subs.replace("\n", "")
                                 lisargs = subs.split(",")
                                 recurred = 0
                                 found = 0
-                                for x in lisargs:
-                                    if str(x).lower() == str(argument) and found != 1:
+                                for lis_argument in lisargs:
+                                    if str(lis_argument).lower() == str(argument) and found != 1:
                                         found = 1
                                     elif recurred != 0:
-                                        newthing = newthing + "," + x
+                                        newthing = newthing + "," + lis_argument
                                     else:
-                                        newthing = newthing + x
+                                        newthing = newthing + lis_argument
                                     recurred += 1
                                 f.write(newthing + "\n")
                             else:
-                                f.write(i)
+                                f.write(user_line)
                         f.truncate()
                         f.close()
-                    message.reply(torep)
+                    message.reply(to_reply)
                 except Exception as e:
-                    torep = "Sorry, the bot has encountered an error. This error is: \n\n" + str(
+                    to_reply = "Sorry, the bot has encountered an error. This error is: \n\n" + str(
                         e) + "\n\n /u/thomas1672 will reply to you in the near future about what went wrong."
-                    message.reply(torep)
-                    torep = torep + "\n\n" + str(message.author) + "\n\n" + str(message.body)
-                    r.send_message("thomas1672", "error", torep)
+                    message.reply(to_reply)
+                    to_reply = to_reply + "\n\n" + str(message.author) + "\n\n" + str(message.body)
+                    r.send_message("thomas1672", "error", to_reply)
                     print(e)
                 try:
-                    f = open("../list.txt", "r+")
-                    d = f.readlines()
+                    f = open("../user_list.txt", "r+")
+                    user_file = f.readlines()
                     f.seek(0)
-                    for i in d:
+                    for user_line in user_file:
                         lf = str(message.author) + ": " + ".*"
-                        if re.match(lf, i):
-                            pers, subs = i.split(": ")
+                        if re.match(lf, user_line):
+                            pers, subs = user_line.split(": ")
                             if len(subs) > 4:
-                                f.write(i)
+                                f.write(user_line)
                         else:
-                            f.write(i)
+                            f.write(user_line)
                     f.truncate()
                     f.close()
                 except Exception as e:
@@ -171,19 +172,19 @@ for message in messages:
                     lin = str(message.author) + ".*"
                     removel(lin)
             else:
-                f = open("../list.txt", "r+")
-                d = f.readlines()
+                f = open("../user_list.txt", "r+")
+                user_file = f.readlines()
                 f.seek(0)
-                for i in d:
+                for user_line in user_file:
                     lf = str(message.author) + ": " + ".*"
-                    if re.match(lf, i):
+                    if re.match(lf, user_line):
                         print("Doing nothing!")
                     else:
-                        f.write(i)
+                        f.write(user_line)
                 f.truncate()
                 f.close()
-                torep = "BOT: You've been unsubscribed from all mailing lists!"
-                message.reply(torep)
+                to_reply = "BOT: You've been unsubscribed from all mailing lists!"
+                message.reply(to_reply)
                 alreadyin.remove(str(message.author))
         elif re.match("subscribe.*", str(message.body).lower()):
             file.seek(0, 2)
@@ -191,7 +192,7 @@ for message in messages:
                 print("Must be manual!")
                 try:
                     sub, args = str(message.body).split(": ")
-                    torep = "Subscribing you to " + args + "!"
+                    to_reply = "Subscribing you to " + args + "!"
                     arguments = args.split(",")
                     wrong = 0
                     argamount = 0
@@ -208,27 +209,25 @@ for message in messages:
                             towrite = towrite + args
                             alreadyin.append(str(message.author))
                         else:
-                            torep = torep + "\n\nSorry, you could not be subscribed to \"" + arguments + "\" because " \
-                                                                                                         "one of them" \
-                                                                                                         " doesn't " \
-                                                                                                         "exist! "
+                            to_reply = to_reply + "\n\nSorry, you could not be subscribed to \"" + arguments + \
+                                       "\" because one of them doesn't exist!"
                         file.close()
-                        file = open('../list.txt', 'a')
+                        file = open('../user_list.txt', 'a')
                         file.write(towrite + "\n")
                         file.close()
-                        file = open('../list.txt', 'r+')
-                        message.reply(torep)
+                        file = open('../user_list.txt', 'r+')
+                        message.reply(to_reply)
                     else:
                         print("Is in alreadyin!")
                         print("manual sub attempted")
-                        f = open("../list.txt", "r+")
-                        d = f.readlines()
+                        f = open("../user_list.txt", "r+")
+                        user_file = f.readlines()
                         f.seek(0)
                         lf = str(message.author) + ".*"
-                        for i in d:
-                            if re.match(lf, i):
-                                i = i.replace("\n", "")
-                                pers, subs = str(i).split(": ")
+                        for user_line in user_file:
+                            if re.match(lf, user_line):
+                                user_line = user_line.replace("\n", "")
+                                pers, subs = str(user_line).split(": ")
                                 newthing = str(pers) + ": "
                                 lisargs = subs.split(",")
                                 recurred = 0
@@ -242,8 +241,8 @@ for message in messages:
                                         if argument not in lisargs:
                                             lisargs.append(argument)
                                     else:
-                                        torep = torep + "\n\nSorry, you could not be subscribed to \"" + argument + \
-                                                                                    "\" because it doesn't exist! "
+                                        to_reply = to_reply + "\n\nSorry, you could not be " \
+                                            "subscribed to \"" + argument + "\" because it doesn't exist! "
                                 for arg in lisargs:
                                     print(str(args))
                                     if recurred == 0:
@@ -253,18 +252,18 @@ for message in messages:
                                         newthing = newthing + "," + arg
                                 f.write(newthing + "\n")
                             else:
-                                f.write(i)
+                                f.write(user_line)
                         f.truncate()
                         f.close()
-                        print("replying with " + torep)
-                        message.reply(torep)
+                        print("replying with " + to_reply)
+                        message.reply(to_reply)
                 except Exception as e:
                     try:
-                        torep = "Sorry, the bot has encountered an error. This error is: \n\n" + str(
+                        to_reply = "Sorry, the bot has encountered an error. This error is: \n\n" + str(
                             e) + "\n\n /u/thomas1672 will reply to you in the near future about what went wrong."
-                        message.reply(torep)
-                        torep = torep + "\n\n" + str(message.author) + "\n\n" + str(message.body)
-                        r.send_message("thomas1672", "error", torep)
+                        message.reply(to_reply)
+                        to_reply = to_reply + "\n\n" + str(message.author) + "\n\n" + str(message.body)
+                        r.send_message("thomas1672", "error", to_reply)
                     except:
                         print(str(e))
                     exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -276,68 +275,68 @@ for message in messages:
                     print("not in")
                     towrite = str(message.author) + ": " + all_subs
                     file.close()
-                    file = open('../list.txt', 'a')
+                    file = open('../user_list.txt', 'a')
                     file.write(towrite + "\n")
                     file.close()
-                    file = open('../list.txt', 'r+')
-                    torep = str(
+                    file = open('../user_list.txt', 'r+')
+                    to_reply = str(
                         message.author) + ",  you have been subscribed to ALL mailing lists. Message me " \
                                           "'Subscriptions' to find out which ones these are, and 'Unsubscribe [" \
                                           "category],[category2]' to unsubscribe from some, or just 'Unsubscribe' to " \
                                           "unsubscribe from all. "
-                    message.reply(torep)
+                    message.reply(to_reply)
                     alreadyin.append(str(message.author))
                 else:
                     print("is in")
-                    f = open("../list.txt", "r+")
-                    d = f.readlines()
+                    f = open("../user_list.txt", "r+")
+                    user_file = f.readlines()
                     f.seek(0)
-                    for i in d:
+                    for user_line in user_file:
                         lf = str(message.author) + ".*"
-                        if re.match(lf, i):
-                            pers, subs = i.split(": ")
+                        if re.match(lf, user_line):
+                            pers, subs = user_line.split(": ")
                             newthing = str(pers) + ": " + all_subs + "\n"
                             f.write(newthing)
                         else:
-                            f.write(i)
+                            f.write(user_line)
                     f.truncate()
                     f.close()
-                    torep = str(
+                    to_reply = str(
                         message.author) + ",  you have been subscribed to ALL mailing lists. Message me " \
                                           "'Subscriptions' to find out which ones these are, and 'Unsubscribe [" \
                                           "category],[category2]' to unsubscribe from some, or just 'Unsubscribe' to " \
                                           "unsubscribe from all. "
-                    message.reply(torep)
+                    message.reply(to_reply)
             print("Adding someone! - " + str(message.author))
             # Adds their name to the ID list and stuff.
             alreadyin.append(message.author)
         elif re.match("subscriptions.*", str(message.body).lower()) and str(message.author) in alreadyin:
-            torep = str(message.author) + ", you are subscribed to the following message boards: "
-            f = open("../list.txt", "r+")
-            d = f.readlines()
+            to_reply = str(message.author) + ", you are subscribed to the following message boards: "
+            f = open("../user_list.txt", "r")
+            user_file = f.readlines()
             f.close()
-            for i in d:
+            for user_line in user_file:
                 lf = str(message.author) + ": " + ".*"
-                if re.match(lf, i):
+                if re.match(lf, user_line):
                     recurred = 0
                     try:
-                        pers, subs = i.split(": ")
+                        pers, subs = user_line.split(": ")
                         subs = subs.replace("\n", "")
                         newthing = str(pers) + ": "
                         lisargs = subs.split(",")
                         if len(lisargs) >= 1:
-                            for x in lisargs:
+                            for lis_argument in lisargs:
                                 if recurred == 0:
-                                    torep = torep + x
+                                    to_reply = to_reply + lis_argument
                                     recurred = 1
                                 else:
-                                    torep = torep + ", " + x
+                                    to_reply = to_reply + ", " + lis_argument
                         else:
-                            torep = torep + "None!"
+                            to_reply = to_reply + "None!"
                     except Exception as e:
-                        torep = torep + "None!"
+                        to_reply = to_reply + "None!"
                         print(str(e))
-            message.reply(torep)
+            message.reply(to_reply)
         elif str(message.author) == "Klokinator" and str(message.id) not in already_done or str(
                 message.author).lower() == "thomas1672" and str(message.id) not in already_done:
             if re.match("\[.*\].*", str(message.subject)):
@@ -362,12 +361,12 @@ def send_messages(message_type, post):
     keep_going = True
     user_list = []
     post_title = str(post.title)
-    user_file = open('../list.txt', 'r+')
-    for user_line in user_file:
-        user_name, subscriptions = str(user_line).split(": ")
+    username_file = open('../user_list.txt', 'r')
+    for username_line in username_file:
+        user_name, subscriptions = str(username_line).split(": ")
         if message_type in subscriptions:
             user_list.append(user_name)
-    user_file.close()
+    username_file.close()
     if message_type == "Parts":
         part = post_title.split(" ")[1]
         mtitle = "New Part!"
@@ -456,7 +455,7 @@ for submission in subreddit.get_new(limit=1):
             "^^Bot ^^made ^^by ^^/u/thomas1672!](http://reddit.com/u/thomas1672) ^^| [^^Donate ^^to ^^the ^^bot!]("
             "https://www.patreon.com/tgwaffles)",
             "")
-        add = nxtpart.body + "\n" + "\n" + "**[" + submission.title + "](" + submission.permalink + ")**" + "\n\n" \
+        add = nxtpart.body[:-228] + "\n" + "\n" + "**[" + submission.title + "](" + submission.permalink + ")**" + "\n\n" \
                                                                                                             "***\n\n[" \
                                                                                                             "^^Bot " \
             "^^Commands]" \
@@ -468,12 +467,13 @@ for submission in subreddit.get_new(limit=1):
         prevurl = prev.permalink
         uwc = []
         wc = 0
-        for i in str(submission.selftext).split():
-            if i not in uwc:
+        for user_line in str(submission.selftext).split():
+            if user_line not in uwc:
                 wc += 1
-                uwc.append(i)
+                uwc.append(user_line)
         postedcomment = submission.add_comment(
-            "Hi. I'm a bot, bleep bloop." + "\n" + "\n" + "\n" + "\n" + "If you want to chat with " + str(totamemb) +
+            "Hi. I'm a bot, bleep bloop." + "\n" + "\n" + "\n" + "\n" + "If you want to chat"
+            " with " + str(total_members) +
             " fellow Cryopod readers, join the Discord at https://discord.gg/6JtsQJR" + "\n" + "\n" +
             "\n" + "[Click Here to be PM'd new updates!](https://np.reddit.com/message/compose/?to=CryopodBot"
             "&subject=Subscribe&message=Subscribe) " + "[Click Here to unsubscribe!](https://np.reddit.com/"
@@ -491,7 +491,6 @@ for submission in subreddit.get_new(limit=1):
         file = open('../lastpart.txt', 'w')
         file.write(str(postedcomment.permalink))
         file.close()
-        file = open('../list.txt', 'r+')
         submission.set_flair("STORY", "story")
         # Sticky the comment that was just posted.
         postedcomment.distinguish(sticky=True)
@@ -500,13 +499,13 @@ for submission in subreddit.get_new(limit=1):
         time.sleep(2)
         # Add post that was just posted to the index list.
         tempedit = toedit.selftext
-        putin = tempedit + "\n" + "\n" + "[" + submission.title + "](" + submission.permalink + ")"
+        putin = tempedit + "\n" + "\n" + "[" + submission.title + "](" + submission.short_link + ")"
         time.sleep(2)
         toedit.edit(putin)
         time.sleep(2)
         if title[0:4].lower() != "test":
             manual_pm(['Parts'], "New Part on /r/TheCryopodToHell!",
-                      "[" + submission.title + "](" + submission.permalink + ")")
+                      "[" + submission.title + "](" + submission.short_link + ")")
     # If it's not a part, check if it's a patreon post, an update, or a general klok post
     elif (re.match(".*\[.*Patreon.*\].*", title) and str(submission.author).lower() == "klokinator" and
             sub_id not in fixit):
@@ -538,7 +537,7 @@ for comment in subcomments:
     # Opens file with comment ids.
     otherfile = open('../done.txt', 'r+')
     # Do it twice to make sure.
-    for i in range(2):
+    for user_line in range(2):
         for line in otherfile:
             linelen = len(line)
             newlinelen = linelen - 1
