@@ -1,0 +1,1 @@
+(<class 'praw.errors.InvalidUser'>, InvalidUser(), <traceback object at 0x7fdbc3d8e808>)
