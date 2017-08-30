@@ -19,8 +19,10 @@ class RThreadWrapper:
         oauth.refresh(force = True)
         self.subreddit = self.r.get_subreddit("thecryopodtohell")
 
-    async def generic_get(self, job, **kwargs):
-        thrd = RThread(job, self, **kwargs)
+    async def generic_get(self, job, subreddit = None, **kwargs):
+        if subreddit is None:
+            subreddit = self.subreddit
+        thrd = RThread(job, self, subreddit = subreddit, **kwargs)
         thrd.start()
 
         while not thrd.done:
