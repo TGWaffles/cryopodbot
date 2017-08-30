@@ -6,7 +6,8 @@ import os
 import psutil
 import re
 from discord.ext import commands
-from .discutils import RThreadWrapper, Vars, uwordcount, permcheck, owners
+from discutils import RThreadWrapper, Vars, uwordcount, permcheck, owners
+from pw_bot import *
 
 
 class CryopodBot:
@@ -480,33 +481,6 @@ class CryopodBot:
         exec(code)
 
     # ===============
-    # bot events
-    # ===============
-    @bot.event
-    async def on_ready(self):
-        print('LOGGED IN!')
-        self.bot.loop.create_task(self.new_part_checker())
-        self.bot.loop.create_task(self.game_updater())
-        self.bot.loop.create_task(self.self_cleaner())
-        self.bot.loop.create_task(self.totmem())
-
-    @bot.event
-    async def on_member_join(self, member):
-        server = self.bot.get_server('226084200405663754')
-        notices = server.get_channel('246162218104782848')
-        tedit = await self.bot.get_message(notices, '321717608699265024')
-        await self.totmem()
-        toch = "Total member count is: " + str(self.v.totamemb) + "\n" + "Welcome to our newest user, " + str(
-            member.mention) + "!"
-
-        with open('../memcount.txt', 'w') as file:
-            file.write(str(self.v.totamemb))
-
-        await self.bot.edit_message(tedit, toch)
-        role = discord.utils.get(member.server.roles, name = '@updaters')
-        await self.bot.add_roles(member, role)
-
-    # ===============
     # task methods
     # ===============
     async def new_part_checker(self):
@@ -614,4 +588,32 @@ class CryopodBot:
 
 if __name__ == '__main__':
     cryopod = CryopodBot()
+
+    # ===============
+    # bot events
+    # ===============
+    @cryopod.bot.event
+    async def on_ready():
+        print('LOGGED IN!')
+        cryopod.bot.loop.create_task(cryopod.new_part_checker())
+        cryopod.bot.loop.create_task(cryopod.game_updater())
+        cryopod.bot.loop.create_task(cryopod.self_cleaner())
+        cryopod.bot.loop.create_task(cryopod.totmem())
+
+    @cryopod.bot.event
+    async def on_member_join(member):
+        server = cryopod.bot.get_server('226084200405663754')
+        notices = server.get_channel('246162218104782848')
+        tedit = await cryopod.bot.get_message(notices, '321717608699265024')
+        await cryopod.totmem()
+        toch = "Total member count is: " + str(cryopod.v.totamemb) + "\n" + "Welcome to our newest user, " + str(
+            member.mention) + "!"
+
+        with open('../memcount.txt', 'w') as file:
+            file.write(str(cryopod.v.totamemb))
+
+        await cryopod.bot.edit_message(tedit, toch)
+        role = discord.utils.get(member.server.roles, name = '@updaters')
+        await cryopod.bot.add_roles(member, role)
+
     cryopod.bot.run(DISCORD_TOKEN)

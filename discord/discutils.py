@@ -10,6 +10,7 @@ owners = {
     'fawful': '135514635129323520'
 }
 
+
 class RThreadWrapper:
     def __init__(self):
         user_agent = "CryoChecker 1.0"
