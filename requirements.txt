@@ -1,0 +1,4 @@
+praw<4.0
+discord.py
+praw-oauth2util
+psutil

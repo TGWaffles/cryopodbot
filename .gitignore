@@ -1,8 +1,9 @@
 pw_bot.py
 /__pycache__/*
-/__pycache__/*
 list.txt
 offenders.txt
 private.py
 cool.txt
 oauth.ini
+/.idea/
+/.gitignore
