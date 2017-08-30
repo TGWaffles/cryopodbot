@@ -2,12 +2,13 @@
 import asyncio
 import re
 
+import random
 import aiohttp
 import discord
 import praw
 import os
 import psutil
-import requests
+import OAuth2Util
 import string
 from pw_bot import *
 
@@ -17,9 +18,9 @@ while True:
         client = discord.Client()
         user_agent = ("CryoChecker 1.0")
         r = praw.Reddit(user_agent = user_agent)
-        r.login(REDDIT_USERNAME, REDDIT_PASS)
+        oauth = OAuth2Util.OAuth2Util(r)
+        oauth.refresh(force=True)
         subreddit = r.get_subreddit("thecryopodtohell")
-        r.config.store_json_result = True
         @client.event
         async def on_ready():
             print('LOGGED IN!')
@@ -302,7 +303,7 @@ while True:
                             author = submission.author
                             title = str(submission.title)
                             id = str(submission.id)
-                            if re.search(r"Part [0-9]+.*",title) and str(author).lower() == "klokinator":
+                            if re.match(r"Part [0-9]+.*",title) and str(author).lower() == "klokinator":
                                 try:
                                     # url = submission.permalink
                                     # html = str(requests.get(url,headers = {'User-agent':'...'}).content)
@@ -337,8 +338,9 @@ while True:
                                         biggestpart = int(charcount)
                                         biggesttitle = title
                                     print(str(totproc))
-                                    await client.edit_message(tmp, "Starting statter now! Processed: " + str(totproc) + ", current CPU usage: " + str(psutil.cpu_percent(interval=None)) + "%")
-                                    await asyncio.sleep(0.25)
+                                    if totproc % 25 == 0:
+                                        await client.edit_message(tmp, "Starting statter now! Processed: " + str(totproc) + ", current CPU usage: " + str(psutil.cpu_percent(interval=None)) + "%")
+                                        await asyncio.sleep(0.25)
                                 except Exception as e:
                                     print(str(e))
                                     if ehashappened == False:
