@@ -6,7 +6,7 @@ import os
 import re
 import random
 import time
-from reddit.strings import *
+from strings import *
 
 # Imports all passwords from a hidden file ;)
 from pw_bot import CLIENT_ID, CLIENT_SECRET

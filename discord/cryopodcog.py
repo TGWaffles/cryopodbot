@@ -162,10 +162,9 @@ class CryopodCog:
             self.bot.loop.create_task(self.bot.discordify(text, ctx.message.channel, append))
 
     @commands.command(pass_context = True)
-    async def part(self, ctx):
+    async def part(self, ctx, number):
         found = False
         print("Message author: " + str(ctx.message.author) + " Says: " + str(ctx.message.content))
-        number = str(ctx.message.content).split()[1]
         query = "Part " + number
         if ctx.message.server == self.bot.get_server('226084200405663754'):
             for submission in await self.r.search(str(query)):
@@ -200,7 +199,7 @@ class CryopodCog:
                         append = "\n" + "Wordcount of this part was: " + str(
                             len(str(post.selftext).split())) + ", the character count was: " + str(
                             len(str(post.selftext))) + " and the unique word count was: " + str(
-                            await uwordcount(post.selftext))
+                            uwordcount(post.selftext))
                         self.bot.loop.create_task(self.discordify(text, ctx.message.channel, append))
                         found = True
 
@@ -371,8 +370,8 @@ class CryopodCog:
                     str(self.v.biggestpart))
 
                 self.bot.loop.create_task(
-                    self.discordify(self.v.stat, ctx.message.channel, self.v.append, deletemess = True, deletetime = 600,
-                                    character_limit = 1900, delay = True))
+                    self.discordify(self.v.stat, ctx.message.channel, self.v.append,
+                                    deletemess = True, deletetime = 600, character_limit = 1900, delay = True))
                 self.v.finished = 1
                 self.v.enabled = 0
                 await self.delete_messages(tmp, 30)
@@ -382,7 +381,7 @@ class CryopodCog:
                 await self.bot.edit_message(tmp, "Starting statter now! Processed: " + str(self.v.totproc))
                 await asyncio.sleep(0.25)
             self.bot.loop.create_task(self.discordify(self.v.stat, ctx.message.channel, self.v.append,
-                                                  deletemess = True, deletetime = 600, character_limit = 1900))
+                                                      deletemess = True, deletetime = 600, character_limit = 1900))
 
     @commands.command(pass_context = True)
     async def cancel(self, ctx):

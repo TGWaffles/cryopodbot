@@ -32,7 +32,7 @@ class RThreadWrapper:
         thrd.start()
 
         while not thrd.done:
-            await asyncio.sleep(2)
+            await asyncio.sleep(0.5)
 
         return thrd.returnls
 
