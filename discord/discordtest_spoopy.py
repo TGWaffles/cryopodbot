@@ -26,8 +26,12 @@ while True:
             print('LOGGED IN!')
             global klokky
             global tgwaf
+            global trit
+            global ala
             klokky = client.get_server('226084200405663754').get_member('163936232559083520')
             tgwaf = client.get_server('226084200405663754').get_member('230778630597246983')
+            trit = client.get_server('226084200405663754').get_member('253942046451171328')
+            ala = client.get_server('226084200405663754').get_member('164200221746790400')
 
 
         client.aiosession = aiohttp.ClientSession(loop=client.loop)
@@ -314,7 +318,7 @@ while True:
                 if enabled == 0:
                     enabled = 1
                     finished = 0
-                    if message.author == tgwaf or message.author == klokky:
+                    if message.author in (tgwaf, klokky, trit, ala):
                         print(str(message.content))
                         stat = ""
                         totups = 0
@@ -371,7 +375,8 @@ while True:
                                         await client.edit_message(tmp, "Starting statter now! Processed: " + str(
                                             totproc) + ", current CPU usage: " + str(
                                             psutil.cpu_percent(interval=None)) + "%")
-                                        await asyncio.sleep(0.25)
+                                        if totproc % 100 == 0:
+                                            await asyncio.sleep(0.1)
                                 except Exception as e:
                                     print(str(e))
                                     if not ehashappened:
