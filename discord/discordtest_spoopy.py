@@ -15,9 +15,9 @@ while True:
         # Defines info about the bot and regular PRAW info for reddit post-grabbing.
         client = discord.Client()
         user_agent = "CryoChecker 1.0"
-        r = praw.Reddit(user_agent = user_agent)
+        r = praw.Reddit(user_agent=user_agent)
         oauth = OAuth2Util.OAuth2Util(r)
-        oauth.refresh(force = True)
+        oauth.refresh(force=True)
         subreddit = r.get_subreddit("thecryopodtohell")
 
 
@@ -30,7 +30,7 @@ while True:
             tgwaf = client.get_server('226084200405663754').get_member('230778630597246983')
 
 
-        client.aiosession = aiohttp.ClientSession(loop = client.loop)
+        client.aiosession = aiohttp.ClientSession(loop=client.loop)
         global enabled
         enabled = 0
         global apenabled
@@ -61,8 +61,8 @@ while True:
                 print("Total members calculated! Total is: " + str(totamemb))
 
 
-        async def discordify(fullmessage, mesc, append = "", character_limit = 2000, deletemess = False, deletetime = 0,
-                             delay = False):
+        async def discordify(fullmessage, mesc, append="", character_limit=2000, deletemess=False, deletetime=0,
+                             delay=False):
             messages = []
             tempmessage = fullmessage
             while len(tempmessage) > character_limit:
@@ -104,14 +104,14 @@ while True:
             file.write(str(totamemb))
             file.close()
             await client.edit_message(tedit, toch)
-            role = discord.utils.get(member.server.roles, name = '@updaters')
+            role = discord.utils.get(member.server.roles, name='@updaters')
             await client.add_roles(member, role)
 
 
         @client.event
         async def on_message(message):
             if message.content.startswith('!optout'):
-                role = discord.utils.get(message.server.roles, name = '@updaters')
+                role = discord.utils.get(message.server.roles, name='@updaters')
                 tmp = await client.send_message(message.channel, 'Trying to remove you, ' + str(message.author.mention))
                 await client.remove_roles(message.author, role)
                 await client.edit_message(tmp, 'Removed!')
@@ -119,7 +119,7 @@ while True:
                 await client.delete_message(tmp)
                 await client.delete_message(message)
             elif message.content.startswith('!optin'):
-                role = discord.utils.get(message.server.roles, name = '@updaters')
+                role = discord.utils.get(message.server.roles, name='@updaters')
                 tmp = await client.send_message(message.channel, 'Trying to add you, ' + str(message.author.mention))
                 await client.add_roles(message.author, role)
                 await client.edit_message(tmp, 'Added!')
@@ -138,12 +138,12 @@ while True:
                 file.write(str(totamemb))
                 file.close()
                 await client.edit_message(tedit, toch)
-                role = discord.utils.get(member.server.roles, name = '@updaters')
+                role = discord.utils.get(member.server.roles, name='@updaters')
                 await client.add_roles(member, role)
             elif message.content.startswith('!dev-swapsies'):
                 print("got a swapsie request")
                 if message.author == tgwaf:
-                    role = discord.utils.get(message.server.roles, name = '@updaters')
+                    role = discord.utils.get(message.server.roles, name='@updaters')
                     for member in client.get_server('226084200405663754').members:
                         print("Handling the member..." + str(member.name))
                         if role in member.roles:
@@ -184,14 +184,14 @@ while True:
                     await client.delete_message(tmp)
             elif message.content.startswith('!avatar') and str(
                     message.author).lower() == "fawful#9748" or message.content.startswith(
-                    '!avatar') and message.author == tgwaf:
+                '!avatar') and message.author == tgwaf:
                 if message.attachments:
                     thing = message.attachments[0]['url']
                 else:
                     url = message.content[4:]
                     thing = url.strip('<>')
                 async with client.aiosession.get(thing) as res:
-                    await client.edit_profile(avatar = await res.read())
+                    await client.edit_profile(avatar=await res.read())
                     tmp = await client.send_message(message.channel,
                                                     "Done it for you, master " + str(message.author.mention))
                     await asyncio.sleep(30)
@@ -212,7 +212,7 @@ while True:
                         subid = str(subidt)[:-2]
                     else:
                         subid = subidt
-                    post = r.get_submission(submission_id = subid)
+                    post = r.get_submission(submission_id=subid)
                     text = str(post.selftext)
                     uwc = []
                     wc = 0
@@ -242,7 +242,7 @@ while True:
                         subid = str(subidt)[:-2]
                     else:
                         subid = subidt
-                    post = r.get_submission(submission_id = subid)
+                    post = r.get_submission(submission_id=subid)
                     text = str(post.selftext)
                     await client.send_message(message.channel, str(post.title))
                     append = "\n" + "Wordcount of this part was: " + str(
@@ -256,7 +256,7 @@ while True:
                 number = str(message.content).split()[1]
                 query = "Part " + number
                 if message.server == client.get_server('226084200405663754'):
-                    for submission in r.search(str(query), subreddit = 'thecryopodtohell'):
+                    for submission in r.search(str(query), subreddit='thecryopodtohell'):
                         if not found:
                             author = submission.author
                             title = str(submission.title)
@@ -279,7 +279,7 @@ while True:
                                 await client.delete_message(message)
                                 found = True
                 else:
-                    for submission in r.search(str(query), subreddit = 'thecryopodtohell'):
+                    for submission in r.search(str(query), subreddit='thecryopodtohell'):
                         if not found:
                             author = submission.author
                             title = str(submission.title)
@@ -324,10 +324,10 @@ while True:
                         totcc = 0
                         biggestpart = 0
                         biggesttitle = ""
-                        total_global_uwc = []
+                        total_global_uwc = set()
                         global_uwc_count = 0
                         tmp = await client.send_message(message.channel, "Starting statter now! Processed: 0")
-                        for submission in subreddit.get_new(limit = 750):
+                        for submission in subreddit.get_new(limit=750):
                             author = submission.author
                             title = str(submission.title)
                             if re.match(r"Part [0-9]+.*", title) and str(author).lower() == "klokinator":
@@ -341,7 +341,7 @@ while True:
                                     #     ratio = float(totrat / totproc)
                                     wordcount = str(len(str(submission.selftext).split()))
                                     charcount = str(len(str(submission.selftext)))
-                                    pp_uwc = []
+                                    pp_uwc = set()
                                     pp_wc = 0
                                     for i in str(submission.selftext).split():
                                         for ind_word in i.lower().split("-"):
@@ -351,17 +351,15 @@ while True:
                                             ind_word = ind_word.translate(punctuation_table)
                                             if ind_word not in pp_uwc:
                                                 pp_wc += 1
-                                                pp_uwc.append(ind_word)
+                                                pp_uwc.add(ind_word)
                                             if ind_word not in total_global_uwc:
-                                                total_global_uwc.append(ind_word)
-                                    unwordcount = str(await uwordcount(submission.selftext))
+                                                total_global_uwc.add(ind_word)
                                     stat = title + ": Upvotes: " + str(submission.ups) + ", Wordcount: " + str(
                                         wordcount) + ", Character Count: " + str(
-                                        charcount) + ", Unique Wordcount: " + str(unwordcount) + "\n" + str(stat)
+                                        charcount) + ", Unique Wordcount: " + str(pp_wc) + "\n" + str(stat)
                                     totups += int(submission.ups)
                                     totproc += 1
                                     totwc += int(wordcount)
-                                    totuwc += int(unwordcount)
                                     totcc += int(charcount)
                                     if int(charcount) > biggestpart:
                                         biggestpart = int(charcount)
@@ -370,7 +368,7 @@ while True:
                                     if totproc % 25 == 0:
                                         await client.edit_message(tmp, "Starting statter now! Processed: " + str(
                                             totproc) + ", current CPU usage: " + str(
-                                            psutil.cpu_percent(interval = None)) + "%")
+                                            psutil.cpu_percent(interval=None)) + "%")
                                         await asyncio.sleep(0.25)
                                 except Exception as e:
                                     print(str(e))
@@ -396,8 +394,8 @@ while True:
                             round(float(totuwc / totproc), 2)) + ", largest part: " + str(
                             biggesttitle) + " kloking in at over " + str(biggestpart) + " characters!"
                         client.loop.create_task(
-                            discordify(stat, message.channel, append, deletemess = True, deletetime = 600,
-                                       character_limit = 1900, delay = True))
+                            discordify(stat, message.channel, append, deletemess=True, deletetime=600,
+                                       character_limit=1900, delay=True))
                         finished = 1
                         enabled = 0
                         await asyncio.sleep(30)
@@ -418,7 +416,7 @@ while True:
                         biggestpart = 0
                         biggesttitle = ""
                         tmp = await client.send_message(message.channel, "Starting statter now! Processed: 0")
-                        for submission in subreddit.get_new(limit = 750):
+                        for submission in subreddit.get_new(limit=750):
                             author = submission.author
                             title = str(submission.title)
                             if title.startswith('Part') and str(author).lower() == "klokinator":
@@ -437,7 +435,7 @@ while True:
                                     biggesttitle = title
                                 print(str(totproc))
                                 await client.edit_message(tmp, "Starting statter now! Processed: " + str(
-                                    totproc) + ", current CPU usage: " + str(psutil.cpu_percent(interval = None)) + "%")
+                                    totproc) + ", current CPU usage: " + str(psutil.cpu_percent(interval=None)) + "%")
                                 await asyncio.sleep(0.25)
                         append = "\n" + "Total upvotes: " + str(totups) + ", total submissions processed: " + str(
                             totproc) + ", average upvotes per submission: " + str(
@@ -449,8 +447,8 @@ while True:
                             round(float(totuwc / totproc), 2)) + ", largest part: " + str(
                             biggesttitle) + " kloking in at over " + str(biggestpart) + " characters!"
                         client.loop.create_task(
-                            discordify(stat, message.channel, append, deletemess = True, deletetime = 600,
-                                       character_limit = 1900))
+                            discordify(stat, message.channel, append, deletemess=True, deletetime=600,
+                                       character_limit=1900))
                         finished = 1
                         enabled = 0
                 else:
@@ -461,8 +459,8 @@ while True:
                             await client.edit_message(tmp, "Starting statter now! Processed: " + str(totproc))
                             await asyncio.sleep(0.25)
                         client.loop.create_task(
-                            discordify(stat, message.channel, append, deletemess = True, deletetime = 600,
-                                       character_limit = 1900))
+                            discordify(stat, message.channel, append, deletemess=True, deletetime=600,
+                                       character_limit=1900))
             elif message.content.startswith('!cancel'):
                 if message.author == tgwaf or message.author == klokky:
                     tmp = await client.send_message(message.channel, "ATTEMPTING TO CANCEL ALL RUNNING TASKS!")
@@ -479,16 +477,16 @@ while True:
             # Code for changing my role's colour!
             elif message.content.startswith('!colour'):
                 if message.author == tgwaf:
-                    brole = discord.utils.get(client.get_server('226084200405663754').roles, name = 'Bot')
+                    brole = discord.utils.get(client.get_server('226084200405663754').roles, name='Bot')
                     bcol = brole.colour
-                    erole = discord.utils.get(client.get_server('226084200405663754').roles, name = '@everyone')
+                    erole = discord.utils.get(client.get_server('226084200405663754').roles, name='@everyone')
                     ecol = erole.colour
-                    curole = discord.utils.get(client.get_server('226084200405663754').roles, name = 'Bot Dev')
+                    curole = discord.utils.get(client.get_server('226084200405663754').roles, name='Bot Dev')
                     cucol = curole.colour
                     if cucol == bcol:
-                        await client.edit_role(client.get_server('226084200405663754'), curole, colour = ecol)
+                        await client.edit_role(client.get_server('226084200405663754'), curole, colour=ecol)
                     else:
-                        await client.edit_role(client.get_server('226084200405663754'), curole, colour = bcol)
+                        await client.edit_role(client.get_server('226084200405663754'), curole, colour=bcol)
             elif message.content.startswith('!reboot'):
                 if message.author == tgwaf or message.author == klokky:
                     tmp = await client.send_message(message.channel, "Restarting!")
@@ -513,7 +511,7 @@ while True:
                     aptotproc = 0
                     if message.server != client.get_server('226084200405663754'):
                         tmp = await client.send_message(message.channel, "Starting partfinder now! Processed: 0")
-                        for submission in subreddit.get_new(limit = 750):
+                        for submission in subreddit.get_new(limit=750):
                             author = submission.author
                             title = str(submission.title)
                             if title.startswith('Part') and str(author).lower() == "klokinator":
@@ -521,7 +519,7 @@ while True:
                                     submission.selftext) + "\n" + "\n" + aptosend
                                 aptotproc += 1
                             await client.edit_message(tmp, "Starting partfinder now! Processed: " + str(
-                                aptotproc) + ", current CPU usage: " + str(psutil.cpu_percent(interval = None)) + "%")
+                                aptotproc) + ", current CPU usage: " + str(psutil.cpu_percent(interval=None)) + "%")
                             await asyncio.sleep(0.5)
                         apappend = "\n" + "\n" + "That took me a long time. You should be grateful."
                         client.loop.create_task(discordify(aptosend, message.channel, apappend))
@@ -530,7 +528,7 @@ while True:
                 else:
                     if message.server != client.get_server('226084200405663754'):
                         tmp = await client.send_message(message.channel, "Starting partfinder now! Processed: " + str(
-                            aptotproc) + ", current CPU usage: " + str(psutil.cpu_percent(interval = None)) + "%")
+                            aptotproc) + ", current CPU usage: " + str(psutil.cpu_percent(interval=None)) + "%")
                         while apfinished == 0:
                             await client.edit_message(tmp, "Starting partfinder now! Processed: " + str(aptotproc))
                             await asyncio.sleep(0.25)
@@ -551,7 +549,7 @@ while True:
             while True:
                 try:
                     fixit = []
-                    for submission in subreddit.get_new(limit = 3):
+                    for submission in subreddit.get_new(limit=3):
                         author = submission.author
                         title = str(submission.title)
                         id = str(submission.id)
@@ -582,7 +580,7 @@ while True:
                     print(str(e))
 
 
-        async def delete_this_message(mess, whento = 0):
+        async def delete_this_message(mess, whento=0):
             await asyncio.sleep(whento)
             await client.delete_message(mess)
 
@@ -593,7 +591,7 @@ while True:
                 counter = 0
                 channels = ['229813048905302017', '226084200405663754']
                 for i in channels:
-                    async for log in client.logs_from(client.get_channel(i), limit = 500):
+                    async for log in client.logs_from(client.get_channel(i), limit=500):
                         if log.author == client.user:
                             await client.delete_message(log)
                             print("Deleting a message!")
@@ -609,7 +607,7 @@ while True:
             await client.wait_until_ready()
             while True:
                 await client.change_presence(
-                    game = discord.Game(name = str(psutil.cpu_percent(interval = None)) + "% CPU Usage!"))
+                    game=discord.Game(name=str(psutil.cpu_percent(interval=None)) + "% CPU Usage!"))
                 await asyncio.sleep(2)
 
 

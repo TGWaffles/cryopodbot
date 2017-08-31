@@ -306,7 +306,7 @@ class CryopodBot:
         self.v.biggestpart = 0
         self.v.biggesttitle = ""
 
-        total_global_uwc = []
+        total_global_uwc = set()
         global_uwc_count = 0
 
         tmp = await self.bot.say("Starting statter now! Processed: 0")
@@ -317,7 +317,7 @@ class CryopodBot:
                 try:
                     wordcount = str(len(str(submission.selftext).split()))
                     charcount = str(len(str(submission.selftext)))
-                    pp_uwc = []
+                    pp_uwc = set()
                     pp_wc = 0
                     for i in str(submission.selftext).split():
                         for ind_word in i.lower().split("-"):
@@ -327,17 +327,15 @@ class CryopodBot:
                             ind_word = ind_word.translate(punctuation_table)
                             if ind_word not in pp_uwc:
                                 pp_wc += 1
-                                pp_uwc.append(ind_word)
+                                pp_uwc.add(ind_word)
                             if ind_word not in total_global_uwc:
-                                total_global_uwc.append(ind_word)
-                    unwordcount = str(await uwordcount(submission.selftext))
+                                total_global_uwc.add(ind_word)
                     self.v.stat = title + ": Upvotes: " + str(submission.ups) + ", Wordcount: " + str(
                         wordcount) + ", Character Count: " + str(
-                        charcount) + ", Unique Wordcount: " + str(unwordcount) + "\n" + str(self.v.stat)
+                        charcount) + ", Unique Wordcount: " + str(pp_wc) + "\n" + str(self.v.stat)
                     self.v.totups += int(submission.ups)
                     self.v.totproc += 1
                     self.v.totwc += int(wordcount)
-                    self.v.totuwc += int(unwordcount)
                     self.v.totcc += int(charcount)
                     if int(charcount) > self.v.biggestpart:
                         self.v.biggestpart = int(charcount)
