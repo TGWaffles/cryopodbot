@@ -2,6 +2,7 @@
 import asyncio
 import re
 import aiohttp
+from nltk.corpus import words
 import discord
 import praw
 import os
@@ -329,7 +330,7 @@ while True:
                         biggestpart = 0
                         biggesttitle = ""
                         total_global_uwc = set()
-                        global_uwc_count = 0
+                        eng_words = set([x.lower() for x in words.words()])
                         tmp = await client.send_message(message.channel, "Starting statter now! Processed: 0")
                         await asyncio.sleep(1)
                         for submission in subreddit.get_new(limit=750):
@@ -354,10 +355,10 @@ while True:
                                                 ind_word = ind_word[:-2]
                                             punctuation_table = str.maketrans({key: None for key in string.punctuation})
                                             ind_word = ind_word.translate(punctuation_table)
-                                            if ind_word not in pp_uwc:
+                                            if ind_word not in pp_uwc and ind_word in eng_words:
                                                 pp_wc += 1
                                                 pp_uwc.add(ind_word)
-                                            if ind_word not in total_global_uwc:
+                                            if ind_word not in total_global_uwc and ind_word in eng_words:
                                                 total_global_uwc.add(ind_word)
                                     stat = title + ": Upvotes: " + str(submission.ups) + ", Wordcount: " + str(
                                         wordcount) + ", Character Count: " + str(
@@ -389,8 +390,7 @@ while True:
                                         newlen = lento - 4
                                         tosenderr = tosenderr[:newlen] + "\n" + title + " : " + e + "```"
                                         await client.edit_message(errmsg, tosenderr)
-                        for _ in total_global_uwc:
-                            global_uwc_count += 1
+                        global_uwc_count = len(total_global_uwc)
                         append = "\n" + "Total upvotes: " + str(totups) + ", total submissions processed: " + str(
                             totproc) + ", average upvotes per submission: " + str(
                             round(float(totups / totproc), 2)) + ", total wordcount: " + str(
@@ -399,7 +399,7 @@ while True:
                             round(float(totwc / totproc), 2)) + ", average character count: " + str(
                             round(float(totcc / totproc), 2)) + ", average unique wordcount (per-post): " + str(
                             round(float(totuwc / totproc), 2)) + ", largest part: " + str(
-                            biggesttitle) + " kloking in at over " + str(biggestpart) + " characters!"
+                            biggesttitle) + " kloking in at over " + str(biggestpart) + " characters!\n\n"
                         client.loop.create_task(
                             discordify(stat, message.channel, append, deletemess=True, deletetime=600,
                                        character_limit=1900, delay=True))
