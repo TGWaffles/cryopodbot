@@ -1,5 +1,9 @@
 pw_bot.py
 /__pycache__/*
+/reddit/__pycache__/*
+/discord/__pycache__/*
+user_list.txt
+/reddit/log.txt
 list.txt
 offenders.txt
 private.py
