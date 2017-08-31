@@ -8,6 +8,6 @@ This means that it contains the Reddit bot, the Discord bot, most of the files t
 
 Please note this project is under the GNU General Public License, which states that any changes to the code MUST be made available to other users. See the `LICENSE` file for more details.
 
-Finally, if you have any questions about the above, feel free to contact be on the cryopod's discord, which is at https://discord.gg/EkdeJER
+Finally, if you have any questions about the above, feel free to contact me on the cryopod's discord, which is at https://discord.gg/EkdeJER
 
 Thank you!
