@@ -25,8 +25,8 @@ class CryopodBot(commands.Bot):
     async def totmem(self):
         if not self.v.addedu:
             self.v.totamemb = 0
-            # serv = self.get_server('226084200405663754')
-            serv = self.get_server('239143828722941952')
+            serv = self.get_server('226084200405663754')
+            # serv = self.get_server('239143828722941952')
             for _ in serv.members:
                 self.v.totamemb += 1
             self.v.addedu = True

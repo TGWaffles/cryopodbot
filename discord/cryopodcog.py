@@ -211,8 +211,8 @@ class CryopodCog:
             self.v.enabled = 1
             self.v.finished = 0
 
-            if (ctx.message.author.id not in [self.owners[x] for x in ['tgwaf', 'klok', 'ala', 'tritium']]):
-                    # and (ctx.message.server != self.bot.get_server('226084200405663754')):
+            if (ctx.message.author.id not in [self.owners[x] for x in ['tgwaf', 'klok', 'ala', 'tritium']])\
+                    and (ctx.message.server != self.bot.get_server('226084200405663754')):
                 print(str(ctx.message.content))
 
                 self.v.stat = ""
@@ -518,8 +518,8 @@ class CryopodCog:
         await self.bot.wait_until_ready()
         while True:
             counter = 0
-            # channels = ['229813048905302017', '226084200405663754']
-            channels = ['287145718844489728']
+            channels = ['229813048905302017', '226084200405663754']
+            # channels = ['287145718844489728']
             for i in channels:
                 logs = self.bot.logs_from(self.bot.get_channel(i), limit = 500)
                 async for log in logs:
@@ -527,9 +527,9 @@ class CryopodCog:
                         await self.bot.delete_message(log)
                         print("Deleting a message!")
                         counter += 1
-                    # elif log.content.startswith('!'):
-                    #     await self.bot.delete_message(log)
-                    #     counter += 1
+                    elif log.content.startswith('!'):
+                        await self.bot.delete_message(log)
+                        counter += 1
             print("Done cleaning, " + "! I cleaned up " + str(counter) + " messages!")
             await asyncio.sleep(2000)
 
