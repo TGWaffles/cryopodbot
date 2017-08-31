@@ -335,6 +335,7 @@ class CryopodBot:
                         charcount) + ", Unique Wordcount: " + str(pp_wc) + "\n" + str(self.v.stat)
                     self.v.totups += int(submission.ups)
                     self.v.totproc += 1
+                    self.v.totuwc += int(pp_wc)
                     self.v.totwc += int(wordcount)
                     self.v.totcc += int(charcount)
                     if int(charcount) > self.v.biggestpart:
@@ -376,7 +377,7 @@ class CryopodBot:
             str(round(float(self.v.totups / self.v.totproc), 2)),
             str(self.v.totwc),
             str(self.v.totcc),
-            str(self.v.totuwc),
+            str(self.v.global_uwc_count),
             str(round(float(self.v.totwc / self.v.totproc), 2)),
             str(round(float(self.v.totcc / self.v.totproc), 2)),
             str(round(float(self.v.totuwc / self.v.totproc), 2)),

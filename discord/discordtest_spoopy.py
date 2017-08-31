@@ -327,6 +327,7 @@ while True:
                         total_global_uwc = set()
                         global_uwc_count = 0
                         tmp = await client.send_message(message.channel, "Starting statter now! Processed: 0")
+                        await asyncio.sleep(1)
                         for submission in subreddit.get_new(limit=750):
                             author = submission.author
                             title = str(submission.title)
@@ -359,6 +360,7 @@ while True:
                                         charcount) + ", Unique Wordcount: " + str(pp_wc) + "\n" + str(stat)
                                     totups += int(submission.ups)
                                     totproc += 1
+                                    totuwc += int(pp_wc)
                                     totwc += int(wordcount)
                                     totcc += int(charcount)
                                     if int(charcount) > biggestpart:
