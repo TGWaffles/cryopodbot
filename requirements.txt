@@ -1,4 +1,4 @@
-praw<4.0
+praw
 discord.py
 praw-oauth2util
 psutil

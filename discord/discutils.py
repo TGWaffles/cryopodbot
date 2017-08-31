@@ -1,27 +1,33 @@
+from threading import Thread
 import asyncio
 import praw
-import OAuth2Util
-from threading import Thread
+import prawcore
+import time
 from discord.ext import commands
 
 owners = {
     'klok': '163936232559083520',
     'tgwaf': '230778630597246983',
-    'fawful': '135514635129323520'
+    'fawful': '135514635129323520',
+    'ala': '164200221746790400',
+    'tritium': '253942046451171328'
 }
 
 
 class RThreadWrapper:
     def __init__(self):
         user_agent = "CryoChecker 1.0"
-        self.r = praw.Reddit(user_agent = user_agent)
-        oauth = OAuth2Util.OAuth2Util(self.r)
-        oauth.refresh(force = True)
-        self.subreddit = self.r.get_subreddit("thecryopodtohell")
+        self.r = praw.Reddit(
+            user_agent = user_agent,
+            client_id = "F8kWwJI1IMVQZw",
+            client_secret = None
+        )
+        self.subreddit = self.r.subreddit("thecryopodtohell")
 
     async def generic_get(self, job, subreddit = None, **kwargs):
         if subreddit is None:
             subreddit = self.subreddit
+
         thrd = RThread(job, self, subreddit = subreddit, **kwargs)
         thrd.start()
 
@@ -30,15 +36,15 @@ class RThreadWrapper:
 
         return thrd.returnls
 
-    async def get_new(self, limit = 0):
-        return await self.generic_get('get_new', limit = limit)
+    async def new(self, limit = 0):
+        return await self.generic_get('new', limit = limit)
 
-    async def get_submission(self, submission_id):
-        subls = await self.generic_get('get_submission', subid = submission_id)
+    async def submission(self, id):
+        subls = await self.generic_get('submission', subid = id)
         return subls[0]
 
-    async def search(self, query, subreddit):
-        return await self.generic_get('search', query = query, subreddit = subreddit)
+    async def search(self, query):
+        return await self.generic_get('search', query = query)
 
 
 class RThread(Thread):
@@ -62,21 +68,29 @@ class RThread(Thread):
     def run(self):
         templs = []
 
-        if self.job == 'get_new':
-            for submission in self.subreddit.get_new(limit = self.limit):
-                self.returnls.append(submission)
-            self.returnls.extend(templs)
-            self.done = True
+        while not self.done:
+            try:
 
-        elif self.job == 'get_submission':
-            self.returnls.append(self.r.get_submission(submission_id = self.subid))
-            self.done = True
+                if self.job == 'new':
+                    for submission in self.subreddit.new(limit = self.limit):
+                        self.returnls.append(submission)
+                    self.returnls.extend(templs)
+                    self.done = True
 
-        elif self.job == 'search' and self.query:
-            for submission in self.r.search(self.query, subreddit = self.subreddit):
-                templs.append(submission)
-            self.returnls.extend(templs)
-            self.done = True
+                elif self.job == 'submission':
+                    submission = self.r.submission(id = self.subid)
+                    submission._fetch()
+                    self.returnls.append(submission)
+                    self.done = True
+
+                elif self.job == 'search' and self.query:
+                    for submission in self.subreddit.search(self.query):
+                        templs.append(submission)
+                    self.returnls.extend(templs)
+                    self.done = True
+
+            except prawcore.PrawcoreException:
+                time.sleep(10)
 
 
 class Vars:
@@ -131,4 +145,3 @@ def permcheck(**kwargs):
         return False
 
     return commands.check(predicate)
-
