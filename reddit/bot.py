@@ -9,18 +9,13 @@ import time
 from strings import *
 
 # Imports all passwords from a hidden file ;)
-from pw_bot import CLIENT_ID, CLIENT_SECRET
 
 logging.basicConfig(level=logging.INFO)
 
-user_agent = "CryoBot 2.0"
+user_agent = 'CryoBot 2.0'
 
 # Starts the main section of the reddit bot and assigns it to r.
-r = praw.Reddit(
-    user_agent = user_agent,
-    client_id = CLIENT_ID,
-    client_secret = CLIENT_SECRET
-)
+r = praw.Reddit('CryoBot', user_agent = user_agent)
 
 # Connects to the TCTH sub.
 subreddit = r.subreddit("thecryopodtohell")

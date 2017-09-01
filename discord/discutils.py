@@ -16,12 +16,9 @@ owners = {
 
 class RThreadWrapper:
     def __init__(self):
-        user_agent = "CryoChecker 1.0"
-        self.r = praw.Reddit(
-            user_agent = user_agent,
-            client_id = "F8kWwJI1IMVQZw",
-            client_secret = None
-        )
+        useragent = "CryoChecker 1.0"
+        self.r = praw.Reddit('CryoChecker', user_agent = useragent)
+
         self.subreddit = self.r.subreddit("thecryopodtohell")
 
     async def generic_get(self, job, subreddit = None, **kwargs):
@@ -39,8 +36,8 @@ class RThreadWrapper:
     async def new(self, limit = 0):
         return await self.generic_get('new', limit = limit)
 
-    async def submission(self, id):
-        subls = await self.generic_get('submission', subid = id)
+    async def submission(self, id_):
+        subls = await self.generic_get('submission', subid = id_)
         return subls[0]
 
     async def search(self, query):
@@ -118,7 +115,7 @@ class Vars:
         self.errmsg = None
 
 
-def uwordcount(text):
+async def uwordcount(text):
     uwc = []
     wc = 0
     for i in str(text).split():
