@@ -8,8 +8,6 @@ import random
 import time
 from strings import *
 
-# Imports all passwords from a hidden file ;)
-
 logging.basicConfig(level=logging.INFO)
 
 user_agent = 'CryoBot 2.0'
@@ -452,15 +450,14 @@ for submission in subreddit.new(limit=1):
         alreadyin = []
         finished = []
         todo = []
-        nxtparts = r.submission(url = lastprt)
-        nxtpart = nxtparts.comments[0]
+        nxtpart = r.comment(id = lastprt)
         bodtext = nxtpart.body
         bodytext = bodtext.replace(footer, "")
 
         add = bodytext + footer2.format(title = submission.title,
                                         permalink = submission.url)
         nxtpart.edit(add)
-        prevurl = nxtpart.submission.permalink
+        prevurl = nxtpart.submission.url
         uwc = []
         wc = 0
         for user_line in str(submission.selftext).split():
@@ -473,12 +470,12 @@ for submission in subreddit.new(limit=1):
                                                            uwords = str(wc),
                                                            prevurl = prevurl))
         with open('../lastpart.txt', 'w') as file:
-            file.write(str(postedcomment.permalink))
+            file.write(str(postedcomment.id))
 
         submission.mod.flair("STORY", "story")
 
         # Sticky the comment that was just posted.
-        postedcomment.distinguish(sticky=True)
+        postedcomment.mod.distinguish(sticky=True)
 
         # Get the index list's ID.
         toedit = r.submission(id = '56tvbw')
