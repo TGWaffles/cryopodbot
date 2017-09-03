@@ -398,12 +398,12 @@ def send_messages(message_type, post):
         part = post_title.split(" ")[1]
         mtitle = pmtitle[message_type]
         mtext = pmbody[message_type].format(part = str(part),
-                                            permalink = post.permalink)
+                                            permalink = post.url)
 
     elif message_type in poss_subs:
         mtitle = pmtitle[message_type]
         mtext = pmbody[message_type].format(title = post.title,
-                                            permalink = post.permalink)
+                                            permalink = post.url)
 
     else:
         keep_going = False
@@ -423,7 +423,7 @@ def send_messages(message_type, post):
 
 
 # For thread in the subreddit, out of the newest thread.
-for submission in subreddit.get_new(limit=1):
+for submission in subreddit.new(limit=1):
     print("Checking for submission")
     print(str(submission.title))
     time.sleep(3)
@@ -452,13 +452,13 @@ for submission in subreddit.get_new(limit=1):
         alreadyin = []
         finished = []
         todo = []
-        nxtparts = r.submission(id = lastprt)
+        nxtparts = r.submission(url = lastprt)
         nxtpart = nxtparts.comments[0]
         bodtext = nxtpart.body
         bodytext = bodtext.replace(footer, "")
 
         add = bodytext + footer2.format(title = submission.title,
-                                        permalink = submission.permalink)
+                                        permalink = submission.url)
         nxtpart.edit(add)
         prevurl = nxtpart.submission.permalink
         uwc = []
@@ -467,11 +467,11 @@ for submission in subreddit.get_new(limit=1):
             if user_line not in uwc:
                 wc += 1
                 uwc.append(user_line)
-        postedcomment = submission.add_comment(replystr.format(totalmemb = str(total_members),
-                                                               chars = str(len(submission.selftext)),
-                                                               words = str(len(str(submission.selftext).split())),
-                                                               uwords = str(wc),
-                                                               prevurl = prevurl))
+        postedcomment = submission.reply(replystr.format(totalmemb = str(total_members),
+                                                           chars = str(len(submission.selftext)),
+                                                           words = str(len(str(submission.selftext).split())),
+                                                           uwords = str(wc),
+                                                           prevurl = prevurl))
         with open('../lastpart.txt', 'w') as file:
             file.write(str(postedcomment.permalink))
 
@@ -486,7 +486,7 @@ for submission in subreddit.get_new(limit=1):
 
         # Add post that was just posted to the index list.
         tempedit = toedit.selftext
-        putin = tempedit + "\n" + "\n" + "[" + submission.title + "](" + submission.short_link + ")"
+        putin = tempedit + "\n" + "\n" + "[" + submission.title + "](" + submission.shortlink + ")"
 
         time.sleep(2)
         toedit.edit(putin)
@@ -494,7 +494,7 @@ for submission in subreddit.get_new(limit=1):
 
         if title[0:4].lower() != "test":
             manual_pm(['Parts'], "New Part on /r/TheCryopodToHell!",
-                      "[" + submission.title + "](" + submission.short_link + ")")
+                      "[" + submission.title + "](" + submission.shortlink + ")")
 
     # If it's not a part, check if it's a patreon post, an update, or a general klok post
     elif (re.match(".*\[.*Patreon.*\].*", title) and str(submission.author).lower() == "klokinator" and
@@ -519,7 +519,7 @@ for submission in subreddit.get_new(limit=1):
     # send_messages(type,submission)
 
 # Loops through every comment in the sub.
-for comment in subreddit.get_comments():
+for comment in subreddit.comments():
 
     # Do it twice to make sure.
     for user_line in range(2):

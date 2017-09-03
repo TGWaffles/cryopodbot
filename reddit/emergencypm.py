@@ -6,7 +6,6 @@ import time
 user_agent = "CryoPMer 1.0"
 
 r = praw.Reddit('CryoPMer', user_agent = user_agent)
-subreddit = r.subreddit("thecryopodtohell")
 
 file = open('list.txt', 'r+')
 

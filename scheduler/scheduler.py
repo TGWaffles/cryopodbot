@@ -26,7 +26,7 @@ def postpart(po, secs):
     try:
         time.sleep(secs)
         cryo = r.subreddit('thecryopodtohell')
-        upd = r.submission(url = str(po.permalink))
+        upd = r.submission(url = str(po.url))
 
         totext = upd.selftext
         totitle = upd.title
