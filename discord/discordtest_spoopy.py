@@ -2,24 +2,23 @@
 import asyncio
 import re
 import aiohttp
-from nltk.corpus import words
 import discord
 import praw
 import os
 import psutil
-import OAuth2Util
 import string
+from nltk.corpus import words
 from pw_bot import *
 
 while True:
     try:
         # Defines info about the bot and regular PRAW info for reddit post-grabbing.
         client = discord.Client()
+
         user_agent = "CryoChecker 1.0"
-        r = praw.Reddit(user_agent=user_agent)
-        oauth = OAuth2Util.OAuth2Util(r)
-        oauth.refresh(force=True)
-        subreddit = r.get_subreddit("thecryopodtohell")
+        r = praw.Reddit('CryoChecker', user_agent = user_agent)
+
+        subreddit = r.subreddit("thecryopodtohell")
 
 
         @client.event
@@ -66,7 +65,7 @@ while True:
                 print("Total members calculated! Total is: " + str(totamemb))
 
 
-        async def discordify(fullmessage, mesc, append="", character_limit=2000, deletemess=False, deletetime=0,
+        async def discordify(fullmessage, mesc, append_="", character_limit=2000, deletemess=False, deletetime=0,
                              delay=False):
             messages = []
             tempmessage = fullmessage
@@ -86,9 +85,9 @@ while True:
                 tempmessage = tempmessage[split_index:]
             if len(tempmessage) > 1950:
                 messages.append(tempmessage)
-                messages.append(append)
+                messages.append(append_)
             else:
-                messages.append(tempmessage + append)
+                messages.append(tempmessage + append_)
             for i in messages:
                 tmp = await client.send_message(mesc, i)
                 if deletemess:
@@ -176,7 +175,8 @@ while True:
                     # await client.delete_message(log)
                     # print("Deleting a message!")
                     # counter += 1
-                    # await client.edit_message(tmp, "Done cleaning, " + str(message.author.mention) + "!" + " I cleaned up " + str(counter) + " messages!")
+                    # await client.edit_message(tmp, "Done cleaning, " + str(message.author.mention) +
+                    #                                "!" + " I cleaned up " + str(counter) + " messages!")
                     # await asyncio.sleep(30)
                     # await client.delete_message(tmp)
             elif message.content.startswith('!say'):
@@ -187,9 +187,8 @@ while True:
                     tmp = await client.send_message(channel, str(tosay))
                     await asyncio.sleep(60)
                     await client.delete_message(tmp)
-            elif message.content.startswith('!avatar') and str(
-                    message.author).lower() == "fawful#9748" or message.content.startswith(
-                '!avatar') and message.author == tgwaf:
+            elif message.content.startswith('!avatar') and str(message.author).lower() == "fawful#9748" or \
+               message.content.startswith('!avatar') and message.author == tgwaf:
                 if message.attachments:
                     thing = message.attachments[0]['url']
                 else:
@@ -217,7 +216,7 @@ while True:
                         subid = str(subidt)[:-2]
                     else:
                         subid = subidt
-                    post = r.get_submission(submission_id=subid)
+                    post = r.submission(id = subid)
                     text = str(post.selftext)
                     uwc = []
                     wc = 0
@@ -247,7 +246,7 @@ while True:
                         subid = str(subidt)[:-2]
                     else:
                         subid = subidt
-                    post = r.get_submission(submission_id=subid)
+                    post = r.submission(id = subid)
                     text = str(post.selftext)
                     await client.send_message(message.channel, str(post.title))
                     append = "\n" + "Wordcount of this part was: " + str(
@@ -261,7 +260,7 @@ while True:
                 number = str(message.content).split()[1]
                 query = "Part " + number
                 if message.server == client.get_server('226084200405663754'):
-                    for submission in r.search(str(query), subreddit='thecryopodtohell'):
+                    for submission in subreddit.search(str(query)):
                         if not found:
                             author = submission.author
                             title = str(submission.title)
@@ -284,7 +283,7 @@ while True:
                                 await client.delete_message(message)
                                 found = True
                 else:
-                    for submission in r.search(str(query), subreddit='thecryopodtohell'):
+                    for submission in subreddit.search(str(query)):
                         if not found:
                             author = submission.author
                             title = str(submission.title)
@@ -381,8 +380,13 @@ while True:
                                 except Exception as e:
                                     print(str(e))
                                     if not ehashappened:
-                                        tosenderr = "Error has occurred! Beginning error message!" + "\n" + "\n" + "```" + title + " : " + str(
-                                            e) + "```"
+                                        tosenderr = ("Error has occurred! Beginning error message!"
+                                                     "\n\n"
+                                                     "```"
+                                                     "{}"
+                                                     " : "
+                                                     "{}"
+                                                     "```").format(title, str(e))
                                         errmsg = await client.send_message(message.channel, tosenderr)
                                         ehashappened = True
                                     else:
@@ -430,8 +434,17 @@ while True:
                                 wordcount = str(len(str(submission.selftext).split()))
                                 charcount = str(len(str(submission.selftext)))
                                 unwordcount = str(await uwordcount(submission.selftext))
-                                stat = title + ": Upvotes: " + str(
-                                    submission.ups) + ", Wordcount: " + wordcount + ", Character Count: " + charcount + ", Unique Wordcount: " + unwordcount + "\n" + stat
+                                stat = ("{title}: Upvotes: {updoots}, "
+                                        "Wordcount: {wordcount}, "
+                                        "Character Count: charcount, "
+                                        "Unique Wordcount: {uwords}"
+                                        "\n"
+                                        "{stat}").format(title = title,
+                                                         updoots = submission.ups,
+                                                         wordcount = wordcount,
+                                                         charcount = charcount,
+                                                         uwords = unwordcount,
+                                                         stat = stat)
                                 totups += int(submission.ups)
                                 totproc += 1
                                 totwc += int(wordcount)
@@ -472,8 +485,9 @@ while True:
                 if message.author == tgwaf or message.author == klokky:
                     tmp = await client.send_message(message.channel, "ATTEMPTING TO CANCEL ALL RUNNING TASKS!")
                     try:
-                        await client.edit_message(tmp,
-                                                  "CANCELLED ALL OTHER RUNNING TASKS. CANCELLING MYSELF NOW. IF THERE IS NO RESPONSE FROM HERE, ASSUME I CANCELLED MYSELF SUCCESSFULLY.")
+                        await client.edit_message(tmp, ("CANCELLED ALL OTHER RUNNING TASKS. CANCELLING MYSELF NOW. "
+                                                        "IF THERE IS NO RESPONSE FROM HERE, "
+                                                        "ASSUME I CANCELLED MYSELF SUCCESSFULLY."))
                         os._exit(1)
                     except Exception as e:
                         await client.edit_message(tmp, "Sorry, boss... I failed. Here's my exception...: " + str(e))
@@ -522,8 +536,8 @@ while True:
                             author = submission.author
                             title = str(submission.title)
                             if title.startswith('Part') and str(author).lower() == "klokinator":
-                                aptosend = "~~                                                                                                                                                                                                                                        ~~" + title + "\n" + str(
-                                    submission.selftext) + "\n" + "\n" + aptosend
+                                aptosend = ("~~" + " " * 232 + "~~" + title +
+                                            "\n" + str(submission.selftext) + "\n\n" + aptosend)
                                 aptotproc += 1
                             await client.edit_message(tmp, "Starting partfinder now! Processed: " + str(
                                 aptotproc) + ", current CPU usage: " + str(psutil.cpu_percent(interval=None)) + "%")
@@ -559,16 +573,16 @@ while True:
                     for submission in subreddit.get_new(limit=3):
                         author = submission.author
                         title = str(submission.title)
-                        id = str(submission.id)
+                        id_ = str(submission.id)
                         file = open('../donediscord.txt', 'r+')
                         for line in file:
                             linelen = len(line)
                             newlinelen = linelen - 1
                             if line[:newlinelen] not in fixit:
                                 fixit.append(line[:newlinelen])
-                        if str(author).lower() == "klokinator" and title.lower().startswith(
-                                'part') and id not in fixit:  # or str(author).lower() == "thomas1672" and title[0:4].lower() == "test" and id not in fixit:
-                            file.write(id + "\n")
+                        if str(author).lower() == "klokinator" and title.lower().startswith('part') and id_ not in fixit:
+                            # or str(author).lower() == "thomas1672" and title[0:4].lower() == "test" and id not in fixit:
+                            file.write(id_ + "\n")
                             file.close()
                             uwc = []
                             wc = 0
@@ -576,9 +590,10 @@ while True:
                                 if i not in uwc:
                                     wc += 1
                                     uwc.append(i)
-                            topost = "@everyone - " + title + " - <" + submission.permalink + ">" + " Wordcount of this part: " + str(
-                                len(str(submission.selftext).split())) + ", character count: " + str(
-                                len(str(submission.selftext))) + " unique word count: " + str(wc)
+                            topost = "@everyone - " + title + " - <" + submission.permalink + ">" + \
+                                     " Wordcount of this part: " + str(len(str(submission.selftext).split())) + \
+                                     ", character count: " + str(len(str(submission.selftext))) + \
+                                     " unique word count: " + str(wc)
                             await client.send_message(client.get_channel('226088087996989450'), topost)
                         else:
                             file.close()
@@ -632,5 +647,5 @@ while True:
         client.run(DISCORD_TOKEN)
     except Exception as e:
         f = open('../error.txt', 'r+')
-        f.write(e + "\n")
+        f.write(str(e) + "\n")
         f.close()

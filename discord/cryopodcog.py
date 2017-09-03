@@ -5,7 +5,8 @@ import os
 import psutil
 import re
 from discord.ext import commands
-from discutils import Vars, uwordcount, permcheck, owners
+from discutils import uwordcount, permcheck
+from nltk.corpus import words
 
 
 class CryopodCog:
@@ -121,7 +122,7 @@ class CryopodCog:
                 subid = str(subidt)[:-2]
             else:
                 subid = subidt
-            post = await self.r.submission(id = subid)
+            post = await self.r.submission(id_ = subid)
             text = str(post.selftext)
             uwc = []
             wc = 0
@@ -152,7 +153,7 @@ class CryopodCog:
                 subid = str(subidt)[:-2]
             else:
                 subid = subidt
-            post = await self.r.submission(id = subid)
+            post = await self.r.submission(id_ = subid)
             text = str(post.selftext)
             await self.bot.say(str(post.title))
             append = "\n" + "Wordcount of this part was: " + str(
@@ -162,10 +163,9 @@ class CryopodCog:
             self.bot.loop.create_task(self.bot.discordify(text, ctx.message.channel, append))
 
     @commands.command(pass_context = True)
-    async def part(self, ctx):
+    async def part(self, ctx, number):
         found = False
         print("Message author: " + str(ctx.message.author) + " Says: " + str(ctx.message.content))
-        number = str(ctx.message.content).split()[1]
         query = "Part " + number
         if ctx.message.server == self.bot.get_server('226084200405663754'):
             for submission in await self.r.search(str(query)):
@@ -200,7 +200,7 @@ class CryopodCog:
                         append = "\n" + "Wordcount of this part was: " + str(
                             len(str(post.selftext).split())) + ", the character count was: " + str(
                             len(str(post.selftext))) + " and the unique word count was: " + str(
-                            await uwordcount(post.selftext))
+                            uwordcount(post.selftext))
                         self.bot.loop.create_task(self.discordify(text, ctx.message.channel, append))
                         found = True
 
@@ -211,8 +211,152 @@ class CryopodCog:
             self.v.enabled = 1
             self.v.finished = 0
 
-            if (ctx.message.author.id not in [self.owners[x] for x in ['tgwaf', 'klok', 'ala', 'tritium']])\
-                    and (ctx.message.server != self.bot.get_server('226084200405663754')):
+            if ctx.message.author.id in [self.owners[x] for x in ['tgwaf', 'klok', 'ala', 'tritium']]:
+
+                print(str(ctx.message.content))
+                self.v.stat = ""
+                self.v.totups = 0
+                self.v.totproc = 0
+                self.v.totwc = 0
+                self.v.totuwc = 0
+                self.v.totcc = 0
+                self.v.biggestpart = 0
+                self.v.biggesttitle = ""
+
+                total_global_uwc = set()
+                eng_words = set([x.lower() for x in words.words()])
+
+                tmp = await self.bot.say("Starting statter now! Processed: 0")
+                await asyncio.sleep(1)
+
+                for submission in await self.r.new(limit = 750):
+
+                    author = submission.author
+                    title = str(submission.title)
+
+                    if re.match(r"Part [0-9]+.*", title) and str(author).lower() == "klokinator":
+                        try:
+                            # url = submission.permalink
+                            # html = str(requests.get(url,headers = {'User-agent':'...'}).content)
+                            # try:
+                            #    ratio = re.findall(';\((.*?)% upvoted\)',html)[0]
+                            # except Exception as e:
+                            #     print(str(e))
+                            #     ratio = float(totrat / totproc)
+
+                            wordcount = str(len(str(submission.selftext).split()))
+                            charcount = str(len(str(submission.selftext)))
+
+                            pp_uwc = set()
+                            pp_wc = 0
+
+                            for i in str(submission.selftext).split():
+                                for ind_word in i.lower().split("-"):
+                                    if ind_word.endswith("'s"):
+                                        ind_word = ind_word[:-2]
+                                    punctuation_table = str.maketrans({key: None for key in string.punctuation})
+                                    ind_word = ind_word.translate(punctuation_table)
+                                    if ind_word not in pp_uwc and ind_word in eng_words:
+                                        pp_wc += 1
+                                        pp_uwc.add(ind_word)
+                                    if ind_word not in total_global_uwc and ind_word in eng_words:
+                                        total_global_uwc.add(ind_word)
+
+                            self.v.stat = ("{title}: Upvotes: {updoots}, "
+                                           "Wordcount: {wordcount}, "
+                                           "Character Count: charcount, "
+                                           "Unique Wordcount: {uwords}"
+                                           "\n"
+                                           "{stat}").format(title = title,
+                                                            updoots = submission.ups,
+                                                            wordcount = wordcount,
+                                                            charcount = charcount,
+                                                            uwords = pp_wc,
+                                                            stat = self.v.stat)
+
+                            self.v.totups += int(submission.ups)
+                            self.v.totproc += 1
+                            self.v.totuwc += int(pp_wc)
+                            self.v.totwc += int(wordcount)
+                            self.v.totcc += int(charcount)
+
+                            if int(charcount) > self.v.biggestpart:
+                                self.v.biggestpart = int(charcount)
+                                self.v.biggesttitle = title
+
+                            print(str(self.v.totproc))
+
+                            if self.v.totproc % 25 == 0:
+                                await self.bot.edit_message(tmp, (
+                                    "Starting statter now!"
+                                    " Processed: {}, "
+                                    "current CPU usage: {}%"
+                                ).format(self.v.totproc,
+                                         psutil.cpu_percent(interval = None)))
+
+                                if self.v.totproc % 100 == 0:
+                                    await asyncio.sleep(0.1)
+
+                        except Exception as e:
+                            print(str(e))
+
+                            if not self.v.ehashappened:
+                                self.v.tosenderr = ("Error has occurred! Beginning error message!"
+                                                    "\n\n"
+                                                    "```"
+                                                    "{title}"
+                                                    " : "
+                                                    "{e}"
+                                                    "```").format(title = title,
+                                                                  e = str(e))
+
+                                self.v.errmsg = await self.bot.say(self.v.tosenderr)
+
+                                self.v.ehashappened = True
+
+                            else:
+                                lento = len(self.v.tosenderr)
+                                newlen = lento - 4
+                                self.v.tosenderr = self.v.tosenderr[:newlen] + "\n" + title + " : " + e + "```"
+                                await self.bot.edit_message(self.v.errmsg, self.v.tosenderr)
+
+                global_uwc_count = len(total_global_uwc)
+
+                self.v.append = ("\n"
+                                 "Total upvotes: {}, "
+                                 "total submissions processed: {}, "
+                                 "average upvotes per submission: {}, "
+                                 "total wordcount: {}, "
+                                 "total character count: {}, "
+                                 "total unique wordcount: {}, "
+                                 "average wordcount: {}, "
+                                 "average character count: {}, "
+                                 "average unique wordcount (per-post): {}, "
+                                 "largest part: {} kloking in at over {} characters!"
+                                 ).format(str(self.v.totups),
+                                          str(self.v.totproc),
+                                          str(round(float(self.v.totups / self.v.totproc), 2)),
+                                          str(self.v.totwc),
+                                          str(self.v.totcc),
+                                          str(global_uwc_count),
+                                          str(round(float(self.v.totwc / self.v.totproc), 2)),
+                                          str(round(float(self.v.totcc / self.v.totproc), 2)),
+                                          str(round(float(self.v.totuwc / self.v.totproc), 2)),
+                                          str(self.v.biggesttitle),
+                                          str(self.v.biggestpart))
+
+                self.bot.loop.create_task(self.discordify(self.v.stat, ctx.message.channel, self.v.append,
+                                          deletemess = True, deletetime = 600, character_limit = 1900, delay = True))
+
+                self.v.finished = 1
+                self.v.enabled = 0
+                await self.delete_messages(tmp, 30)
+
+            elif ctx.message.server == self.bot.get_server('226084200405663754'):
+                tmp = await self.bot.say("Not in this channel, " + str(ctx.message.author.mention) + "!")
+                await self.delete_messages(tmp, 30)
+
+            else:
                 print(str(ctx.message.content))
 
                 self.v.stat = ""
@@ -225,13 +369,19 @@ class CryopodCog:
                 self.v.biggesttitle = ""
 
                 tmp = await self.bot.say("Starting statter now! Processed: 0")
+
                 for submission in await self.r.new(limit = 750):
+
                     author = submission.author
                     title = str(submission.title)
+
                     if title.startswith('Part') and str(author).lower() == "klokinator":
+
                         wordcount = str(len(str(submission.selftext).split()))
                         charcount = str(len(str(submission.selftext)))
+
                         unwordcount = str(await uwordcount(submission.selftext))
+
                         self.v.stat = ("{}: Upvotes: {}, Wordcount: {}, Character Count: {}, "
                                        "Unique Wordcount: {}\n{}").format(title, str(submission.ups), wordcount,
                                                                           charcount, unwordcount, self.v.stat)
@@ -241,148 +391,56 @@ class CryopodCog:
                         self.v.totwc += int(wordcount)
                         self.v.totuwc += int(unwordcount)
                         self.v.totcc += int(charcount)
+
                         if int(charcount) > self.v.biggestpart:
                             self.v.biggestpart = int(charcount)
                             self.v.biggesttitle = title
+
                         print(str(self.v.totproc))
+
                         await self.bot.edit_message(tmp, "Starting statter now! Processed: " + str(
                             self.v.totproc) + ", current CPU usage: " + str(psutil.cpu_percent(interval = None)) + "%")
+
                         await asyncio.sleep(0.25)
 
-                self.v.append = ("\nTotal upvotes: {}, total submissions processed: {}, "
+                self.v.append = ("\n"
+                                 "Total upvotes: {}, "
+                                 "total submissions processed: {}, "
                                  "average upvotes per submission: {}, "
-                                 "total wordcount: {}, total character count: {}, total unique wordcount: {}, "
-                                 "average wordcount: {}, average character count: {}, "
+                                 "total wordcount: {}, "
+                                 "total character count: {}, "
+                                 "total unique wordcount: {}, "
+                                 "average wordcount: {}, "
+                                 "average character count: {}, "
                                  "average unique wordcount (per-post): {}, "
-                                 "largest part: {} kloking in at over {} characters!").format(
-                    str(self.v.totups),
-                    str(self.v.totproc),
-                    str(round(float(self.v.totups / self.v.totproc), 2)),
-                    str(self.v.totwc),
-                    str(self.v.totcc),
-                    str(self.v.totuwc),
-                    str(round(float(self.v.totwc / self.v.totproc), 2)),
-                    str(round(float(self.v.totcc / self.v.totproc), 2)),
-                    str(round(float(self.v.totuwc / self.v.totproc), 2)),
-                    str(self.v.biggesttitle),
-                    str(self.v.biggestpart))
+                                 "largest part: {} kloking in at over {} characters!"
+                                 ).format(str(self.v.totups),
+                                          str(self.v.totproc),
+                                          str(round(float(self.v.totups / self.v.totproc), 2)),
+                                          str(self.v.totwc),
+                                          str(self.v.totcc),
+                                          str(self.v.totuwc),
+                                          str(round(float(self.v.totwc / self.v.totproc), 2)),
+                                          str(round(float(self.v.totcc / self.v.totproc), 2)),
+                                          str(round(float(self.v.totuwc / self.v.totproc), 2)),
+                                          str(self.v.biggesttitle),
+                                          str(self.v.biggestpart))
 
                 self.bot.loop.create_task(self.discordify(self.v.stat, ctx.message.channel, self.v.append,
                                                           deletemess = True, deletetime = 600, character_limit = 1900))
+
                 self.v.finished = 1
                 self.v.enabled = 0
-                return
 
-            elif (ctx.message.author.id not in [self.owners[x] for x in ['tgwaf', 'klok', 'ala', 'tritium']]) and \
-                    (ctx.message.server == self.bot.get_server('226084200405663754')):
-                tmp = await self.bot.say("Not in this channel, " + str(ctx.message.author.mention) + "!")
-                await self.delete_messages(tmp, 30)
-                return
-
-            else:
-
-                print(str(ctx.message.content))
-                self.v.stat = ""
-                self.v.totups = 0
-                self.v.totproc = 0
-                self.v.totwc = 0
-                self.v.totuwc = 0
-                self.v.totcc = 0
-                self.v.biggestpart = 0
-                self.v.biggesttitle = ""
-
-                total_global_uwc = []
-                global_uwc_count = 0
-
-                tmp = await self.bot.say("Starting statter now! Processed: 0")
-                for submission in await self.r.new(limit = 750):
-                    author = submission.author
-                    title = str(submission.title)
-                    if re.match(r"Part [0-9]+.*", title) and str(author).lower() == "klokinator":
-                        try:
-                            wordcount = str(len(str(submission.selftext).split()))
-                            charcount = str(len(str(submission.selftext)))
-                            pp_uwc = []
-                            pp_wc = 0
-                            for i in str(submission.selftext).split():
-                                for ind_word in i.lower().split("-"):
-                                    if ind_word.endswith("'s"):
-                                        ind_word = ind_word[:-2]
-                                    punctuation_table = str.maketrans({key: None for key in string.punctuation})
-                                    ind_word = ind_word.translate(punctuation_table)
-                                    if ind_word not in pp_uwc:
-                                        pp_wc += 1
-                                        pp_uwc.append(ind_word)
-                                    if ind_word not in total_global_uwc:
-                                        total_global_uwc.append(ind_word)
-                            unwordcount = str(uwordcount(submission.selftext))
-                            self.v.stat = title + ": Upvotes: " + str(submission.ups) + ", Wordcount: " + str(
-                                wordcount) + ", Character Count: " + str(
-                                charcount) + ", Unique Wordcount: " + str(unwordcount) + "\n" + str(self.v.stat)
-                            self.v.totups += int(submission.ups)
-                            self.v.totproc += 1
-                            self.v.totwc += int(wordcount)
-                            self.v.totuwc += int(unwordcount)
-                            self.v.totcc += int(charcount)
-                            if int(charcount) > self.v.biggestpart:
-                                self.v.biggestpart = int(charcount)
-                                self.v.biggesttitle = title
-                            print(str(self.v.totproc))
-                            if self.v.totproc % 25 == 0:
-
-                                await self.bot.edit_message(tmp, ("Starting statter now!"
-                                                                  " Processed: {}, current CPU usage: {}%").format(
-                                    str(self.v.totproc),
-                                    str(psutil.cpu_percent(interval = None))))
-
-                                await asyncio.sleep(0.25)
-
-                        except Exception as e:
-                            print(str(e))
-                            if not self.v.ehashappened:
-                                self.v.tosenderr = "Error has occurred! Beginning error message!" + "\n" + "\n" \
-                                                   + "```" + title + " : " + str(e) + "```"
-                                self.v.errmsg = await self.bot.say(self.v.tosenderr)
-                                self.v.ehashappened = True
-                            else:
-                                lento = len(self.v.tosenderr)
-                                newlen = lento - 4
-                                self.v.tosenderr = self.v.tosenderr[:newlen] + "\n" + title + " : " + e + "```"
-                                await self.bot.edit_message(self.v.errmsg, self.v.tosenderr)
-                for _ in total_global_uwc:
-                    global_uwc_count += 1
-
-                self.v.append = ("\nTotal upvotes: {}, total submissions processed: {}, "
-                                 "average upvotes per submission: {}, "
-                                 "total wordcount: {}, total character count: {}, total unique wordcount: {}, "
-                                 "average wordcount: {}, average character count: {}, "
-                                 "average unique wordcount (per-post): {}, "
-                                 "largest part: {} kloking in at over {} characters!").format(
-                    str(self.v.totups),
-                    str(self.v.totproc),
-                    str(round(float(self.v.totups / self.v.totproc), 2)),
-                    str(self.v.totwc),
-                    str(self.v.totcc),
-                    str(self.v.totuwc),
-                    str(round(float(self.v.totwc / self.v.totproc), 2)),
-                    str(round(float(self.v.totcc / self.v.totproc), 2)),
-                    str(round(float(self.v.totuwc / self.v.totproc), 2)),
-                    str(self.v.biggesttitle),
-                    str(self.v.biggestpart))
-
-                self.bot.loop.create_task(
-                    self.discordify(self.v.stat, ctx.message.channel, self.v.append, deletemess = True, deletetime = 600,
-                                    character_limit = 1900, delay = True))
-                self.v.finished = 1
-                self.v.enabled = 0
-                await self.delete_messages(tmp, 30)
         elif ctx.message.server != self.bot.get_server('226084200405663754'):
             tmp = await self.bot.say("Starting statter now! Processed: " + str(self.v.totproc))
+
             while self.v.finished == 0:
                 await self.bot.edit_message(tmp, "Starting statter now! Processed: " + str(self.v.totproc))
                 await asyncio.sleep(0.25)
+
             self.bot.loop.create_task(self.discordify(self.v.stat, ctx.message.channel, self.v.append,
-                                                  deletemess = True, deletetime = 600, character_limit = 1900))
+                                                      deletemess = True, deletetime = 600, character_limit = 1900))
 
     @commands.command(pass_context = True)
     async def cancel(self, ctx):
@@ -438,7 +496,7 @@ class CryopodCog:
                     title = str(submission.title)
                     if title.startswith('Part') and str(author).lower() == "klokinator":
                         self.v.aptosend = ("~~" + " " * 232 + "~~" + title +
-                                           "\n" + str(submission.selftext) + "\n" + "\n" + self.v.aptosend)
+                                           "\n" + str(submission.selftext) + "\n\n" + self.v.aptosend)
 
                         self.v.aptotproc += 1
                     await self.bot.edit_message(tmp, "Starting partfinder now! Processed: " + str(

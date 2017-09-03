@@ -9,5 +9,6 @@ offenders.txt
 private.py
 cool.txt
 oauth.ini
+praw.ini
 /.idea/
 /.gitignore
