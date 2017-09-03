@@ -21,11 +21,9 @@ class RThreadWrapper:
 
         self.subreddit = self.r.subreddit("thecryopodtohell")
 
-    async def generic_get(self, job, subreddit = None, **kwargs):
-        if subreddit is None:
-            subreddit = self.subreddit
+    async def generic_get(self, job, **kwargs):
 
-        thrd = RThread(job, self, subreddit = subreddit, **kwargs)
+        thrd = RThread(job, self, subreddit = self.subreddit, **kwargs)
         thrd.start()
 
         while not thrd.done:
@@ -63,31 +61,40 @@ class RThread(Thread):
         super(RThread, self).__init__()
 
     def run(self):
+        job = getattr(self, self.job)
+
+        if callable(job):
+            while not self.done:
+                try:
+
+                    templs = job()
+                    self.returnls.extend(templs)
+                    self.done = True
+
+                except prawcore.PrawcoreException:
+                    time.sleep(10)
+
+    def new(self):
         templs = []
 
-        while not self.done:
-            try:
+        for submission in self.subreddit.new(limit = self.limit):
+            templs.append(submission)
 
-                if self.job == 'new':
-                    for submission in self.subreddit.new(limit = self.limit):
-                        self.returnls.append(submission)
-                    self.returnls.extend(templs)
-                    self.done = True
+        return templs
 
-                elif self.job == 'submission':
-                    submission = self.r.submission(id = self.subid)
-                    submission._fetch()
-                    self.returnls.append(submission)
-                    self.done = True
+    def submission(self):
+        submission = self.r.submission(id = self.subid)
+        submission._fetch()
 
-                elif self.job == 'search' and self.query:
-                    for submission in self.subreddit.search(self.query):
-                        templs.append(submission)
-                    self.returnls.extend(templs)
-                    self.done = True
+        return [submission]
 
-            except prawcore.PrawcoreException:
-                time.sleep(10)
+    def search(self):
+        templs = []
+
+        for submission in self.subreddit.search(self.query):
+            templs.append(submission)
+
+        return templs
 
 
 class Vars:
